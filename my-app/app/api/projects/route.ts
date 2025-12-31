@@ -63,8 +63,8 @@ export async function POST(req: Request){
            .single();
 
             if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
-  }
+                 return Response.json({ error: error.message }, { status: 500 });
+        }
   await supabase.from("audit_logs").insert({
     organization_id: organizationId,
     actor_id: user.id,
@@ -76,3 +76,54 @@ export async function POST(req: Request){
            
 
 }
+export async function GET(req: Request){
+  const {searchParams} = new URL(req.url);
+  const organizationId = searchParams.get("organizationId");
+
+  if (!organizationId) {
+    return Response.json(
+      { error: "organizationId is required" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = getSupabaseServerClient();
+
+  const {
+    data : {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const {data: membership} = await supabase
+        .from("members")
+        .select("role")
+        .eq("organization_id",organizationId)
+        .eq("user_id",user.id)
+        .single();
+
+   if (!membership) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const {data,error} = await supabase
+         .from("projects")
+         .select("*")
+         .eq("organization_id",organizationId)
+         .order("created_at", {ascending: false})
+
+  if(error){
+    return Response.json({error: error.message}, {status : 500});
+  }
+
+  return Response.json({projects: data ?? []});
+  
+}
+
+         
+
+
+
+
