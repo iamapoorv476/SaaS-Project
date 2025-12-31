@@ -1,5 +1,13 @@
 import { getSupabaseServerClient } from "@/app/lib/billing/supabase/server";
 
+interface Membership {
+  role: "owner" | "admin" | "member";
+  organizations: {
+    id: string;
+    name: string;
+  } | null;
+}
+
 export async function GET(){
     const supabase = getSupabaseServerClient();
 
