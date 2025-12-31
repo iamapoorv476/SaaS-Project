@@ -9,6 +9,7 @@ interface Membership {
 }
 
 export async function GET(){
+    try {
     const supabase = getSupabaseServerClient();
 
     const{
@@ -37,10 +38,29 @@ export async function GET(){
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  const organizations = data.map((m: any)=>({
-    id: m.organizations.id,
-    name:m.organizations.name,
-    role:m.role,
-  }))
+  const organizations = (data as Membership[])
+       .filter(m => m.organizations !==null)
+       .map(m => ({
+        id: m.organizations!.id,
+        name: m.organizations!.name,
+        role: m.role,
+       }))
+       .sort((a, b) => {
+
+        const roleOrder = {owner: 0, admin: 1, member: 2};
+        const roleCompare = {roleOrder[a.role] || 3} - (roleOrder[b.role] || 3);
+        return roleCompare !== 0 ? roleCompare : a.name.localeCompare(b.name);
+
+       })
+
   return Response.json({organizations});
+} 
+catch(error){
+    console.error("Unexpected error:", error);
+    return Response.json(
+        {error: "Internal Server Error"},
+        {status: 500}
+    )
+}
+
 }
