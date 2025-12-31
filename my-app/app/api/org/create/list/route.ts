@@ -30,7 +30,7 @@ export async function GET(){
   }
 
   const organizations = data.map((m: any)=>({
-    id: m.organizations_id,
+    id: m.organizations.id,
     name:m.organizations.name,
     role:m.role,
   }))
