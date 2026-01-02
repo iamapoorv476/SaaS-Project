@@ -3,7 +3,7 @@ import { getOrgPlan } from "@/app/lib/billing/getOrgPlan";
 
 export async function GET(req: Request){
     const {searchParams} = new URL(req.url);
-    const {organizationId} = searchParams.get("organizationId");
+    const organizationId = searchParams.get("organizationId");
 
     if (!organizationId) {
     return Response.json(
@@ -27,7 +27,7 @@ export async function GET(req: Request){
          .from("members")
          .select("role")
          .eq("organization_id",organizationId)
-         .eq("user_id", user.id),
+         .eq("user_id", user.id)
          .single();
    
      if (!membership) {

@@ -54,6 +54,18 @@ export async function POST(req: Request) {
       { status: 403 }
     );
   }
+   const { data: existingInvite } = await supabase
+    .from("invites")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("email", email)
+    .is("accepted_at", null)
+    .maybeSingle();
+
+  if (existingInvite) {
+    return Response.json({ error: "Invite already pending" }, { status: 409 });
+  }
+  const token = crypto.randomUUID();
 
   const { data, error } = await supabase
     .from("invites")
