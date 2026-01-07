@@ -1,62 +1,78 @@
-import { getSupabaseServerClient } from "@/app/lib/billing/supabase/server";
+import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
+import { NextResponse } from "next/server";
 
-export async function POST(req:Request) {
-    const {name} = await req.json();
-
-    if(!name){
-        return Response.json({error :"name required"},{status:400});
-    }
-
-    const supabase = getSupabaseServerClient();
-
+export async function POST(request: Request) {
+  try {
+    const supabase = await getSupabaseClient();
     const {
-        data :{user},
-        error : authError,
+      data: { user },
+      error: authError,
     } = await supabase.auth.getUser();
 
-    if(!user || authError){
-        return Response.json({error:"Authentication is required"},{status:401});
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
     }
+    const body = await request.json();
+    const { name } = body;
 
-    const {data : org, error: orgError} = await supabase
-          .from("organizations")
-          .insert({name})
-          .select()
-          .single();
-    
-    if(orgError){
-        return Response.json({error:orgError.message},{status:500});
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      return NextResponse.json(
+        { error: "Organization name is required" },
+        { status: 400 }
+      );
     }
+    const admin = await getSupabaseAdmin();
+    const { data: organization, error: orgError } = await admin
+      .from("organizations")
+      .insert({
+        name: name.trim(),
+        owner_id: user.id,
+      })
+      .select()
+      .single();
 
-    await supabase.from("members").insert({
-        organization_id :org.id,
-        user_id:user.id,
-        role:"owner",
+    if (orgError) {
+      console.error("Error creating organization:", orgError);
+      return NextResponse.json(
+        { error: "Failed to create organization", details: orgError.message },
+        { status: 500 }
+      );
+    }
+    const { error: memberError } = await admin.from("members").insert({
+      organization_id: organization.id,
+      user_id: user.id,
+      role: "owner",
     });
 
-    const {data: freePlan} =await supabase
-          .from("subscription_plans")
-    .select("id")
-    .eq("slug", "free")
-    .single();
+    if (memberError) {
+      console.error("Error creating member record:", memberError);
+      await admin.from("organizations").delete().eq("id", organization.id);
+      
+      return NextResponse.json(
+        { error: "Failed to create member record", details: memberError.message },
+        { status: 500 }
+      );
+    }
 
-  if (freePlan) {
-    await supabase.from("subscriptions").insert({
-      organization_id: org.id,
-      plan_id: freePlan.id,
-      status: "active",
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        organization: {
+          id: organization.id,
+          name: organization.name,
+          created_at: organization.created_at,
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Unexpected error in /api/org/create:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-   await supabase.from("audit_logs").insert({
-    organization_id: org.id,
-    actor_id: user.id,
-    action: "organization.created",
-    entity_type: "organization",
-    entity_id: org.id,
-  });
-
-  return Response.json({ organization: org });
-
-
 }

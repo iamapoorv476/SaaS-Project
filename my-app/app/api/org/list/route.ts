@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@/app/lib/billing/supabase/server";
+import { getSupabaseClient } from "@/app/lib/billing/supabase/server";
 
 interface Membership {
   role: "owner" | "admin" | "member";
@@ -10,7 +10,7 @@ interface Membership {
 
 export async function GET(){
     try {
-    const supabase = getSupabaseServerClient();
+    const supabase =  await getSupabaseClient();
 
     const{
         data: {user},
@@ -48,7 +48,7 @@ export async function GET(){
        .sort((a, b) => {
 
         const roleOrder = {owner: 0, admin: 1, member: 2};
-        const roleCompare = {roleOrder[a.role] || 3} - (roleOrder[b.role] || 3);
+        const roleCompare = (roleOrder[a.role] || 3) - (roleOrder[b.role] || 3);
         return roleCompare !== 0 ? roleCompare : a.name.localeCompare(b.name);
 
        })
