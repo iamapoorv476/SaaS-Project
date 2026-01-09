@@ -7,8 +7,8 @@ const client = createClient(
 
 async function run() {
   const { data, error } = await client.auth.signInWithPassword({
-    email: "test@example.com",
-    password: "12345678",
+    email: "newmember@example.com",
+    password: "1234",
   });
 
   console.log("TOKEN:", data.session?.access_token);

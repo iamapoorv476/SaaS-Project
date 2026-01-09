@@ -1,10 +1,11 @@
 
 import { getOrgPlan } from "@/app/lib/billing/getOrgPlan";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 
 const VALID_ROLES = ["member", "admin"];
 
 export async function POST(req: Request) {
+  try{
   const { organizationId, email, role } = await req.json();
 
   if (!organizationId || !email) {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid role" }, { status: 400 });
   }
 
-  const supabase = getSupabaseServerClient();
+  const supabase =await getSupabaseClient();
 
   const {
     data: { user },
@@ -27,8 +28,9 @@ export async function POST(req: Request) {
   if (!user) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const admin = await getSupabaseAdmin();
 
-  const { data: membership } = await supabase
+  const { data: membership } = await admin
     .from("members")
     .select("role")
     .eq("organization_id", organizationId)
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
 
   const { plan } = await getOrgPlan(organizationId);
 
-  const { count } = await supabase
+  const { count } = await admin
     .from("members")
     .select("*", { count: "exact", head: true })
     .eq("organization_id", organizationId);
@@ -54,7 +56,7 @@ export async function POST(req: Request) {
       { status: 403 }
     );
   }
-   const { data: existingInvite } = await supabase
+   const { data: existingInvite } = await admin
     .from("invites")
     .select("id")
     .eq("organization_id", organizationId)
@@ -65,15 +67,24 @@ export async function POST(req: Request) {
   if (existingInvite) {
     return Response.json({ error: "Invite already pending" }, { status: 409 });
   }
+  // const {data: existingMember} = await admin 
+  //        .from("members")
+  //        .select("id")
+  //        .eq("organization_id",organizationId)
+  //        .eq("user_id",user.id)
+  //        .maybeSingle();
+  // if(existingMember){
+  //   return Response.json({error:"Member already exists"},{status: 409});
+  // }
   const token = crypto.randomUUID();
-
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from("invites")
     .insert({
       organization_id: organizationId,
       email,
       role,
       created_by: user.id,
+      token: token,
     })
     .select()
     .single();
@@ -89,6 +100,12 @@ export async function POST(req: Request) {
     entity_type: "invite",
     entity_id: data.id,
   });
+  
 
   return Response.json({ invite: data });
+}
+catch(error){
+  console.error("Unexpected error in POST /api/invites/create:", error);
+  return Response.json({error:"Internal server error"},{status:500})
+}
 }
