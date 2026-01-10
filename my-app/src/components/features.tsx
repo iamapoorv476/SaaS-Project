@@ -2,7 +2,7 @@ export function Features(){
    const features = [
     {
       icon: "👥",
-      title: "Team Collaboration",
+      title: "Invite members, assign roles, control access",
       description: "Real-time collaboration tools that keep your team in sync and productive.",
     },
     {
@@ -12,7 +12,7 @@ export function Features(){
     },
     {
       icon: "📊",
-      title: "Analytics",
+      title: "Track team velocity and delivery bottlenecks",
       description: "Gain insights with comprehensive analytics and performance tracking.",
     },
   ]

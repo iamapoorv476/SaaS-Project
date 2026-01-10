@@ -3,7 +3,7 @@ export function Hero() {
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <div className="text-center">
         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight text-balance">
-          Build Better, Ship Faster
+          Turn Project Chaos Into Clarity
         </h1>
         <p className="mx-auto max-w-2xl text-xl text-slate-300 mb-10 text-balance">
           Streamline your project management workflow and collaborate seamlessly with your team. Ship products faster
