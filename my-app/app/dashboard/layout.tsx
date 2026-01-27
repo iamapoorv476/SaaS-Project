@@ -22,7 +22,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps){
 
                 <nav className="flex-1 px-4 py-6 space-y-2">
                     <NavItem href="/dashboard" icon={<Home size ={20}/> }label ="Dashboard"/>
-                    <NavItem href ="/dashboard/projects" icon={<Folder size={20}/>} lablel ="Projects"/>
+                    <NavItem href ="/dashboard/projects" icon={<Folder size={20}/>} label ="Projects"/>
                     <NavItem href="/dashboard/settings" icon={<Settings size={20} />} label="Settings" />
                 </nav>
 

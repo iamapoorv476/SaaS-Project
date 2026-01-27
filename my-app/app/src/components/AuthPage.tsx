@@ -26,7 +26,7 @@ console.log("Supabase client:", supabase);
 
     try {
       if (isSignin) {
-        // Sign in
+       
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -39,7 +39,6 @@ console.log("Supabase client:", supabase);
           router.refresh();
         }
       } else {
-        // Sign up
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -54,7 +53,7 @@ console.log("Supabase client:", supabase);
           setError(error.message);
         } else {
           setMessage("Account created! Please check your email to verify.");
-          // Optionally redirect to login after 2 seconds
+          
           setTimeout(() => {
             router.push("/signin");
           }, 2000);

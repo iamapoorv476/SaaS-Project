@@ -1,9 +1,97 @@
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight, MoreHorizontal, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { getSupabaseClient } from '../lib/billing/supabase/server';
+import { getSupabaseAdmin } from '../lib/billing/supabase/server';
+export default async function DashboardPage() {
+    const supabase = await getSupabaseClient();
 
-export default function DashboardPage() {
-  return (
+    const {
+        data: {user} ,
+
+    } = await supabase.auth.getUser();
+    if(!user){
+        return(
+            <div className="text-white p-10">
+                <h1 className="text-xl font-semibold">
+                    Unauthorized
+                </h1>
+                <p className="text-slate-400 mt-2">
+                    Please login to continue.
+                </p>
+                <Link 
+                    href ="/auth/login"
+                    className= "inline-block mt-4 px-4 py-2 bg-blue-600 rounded-lg"
+                >
+                    Go to Login
+                </Link>
+            </div>
+        )
+    }
+    const admin = await getSupabaseAdmin();
+
+    const {data: orgMemberships, error} = await admin
+          .from("members")
+          .select("organization_id,organizations(id, name, slug)")
+          .eq("user_id", user.id);
+     if (error) {
+    return (
+      <div className="text-white p-10">
+        <h1 className="text-xl font-semibold">Something went wrong</h1>
+        <p className="text-slate-400 mt-2">{error.message}</p>
+      </div>
+    );
+  }
+   
+  const orgs =
+    orgMemberships
+      ?.map((m: any) => m.organizations)
+      .filter(Boolean) ?? [];
+  if (orgs.length === 0) {
+    return <NoOrganizationState />;
+  }
+   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      <DashboardUI />
+    </div>
+  );
+}
+
+function NoOrganizationState(){
+    return (
+        <div className="max-w-3xl mx-auto mt-20 p-10 rounded-2xl border border-white /10 bg-white/5 backdrop-blur-sm text-center">
+            <h1 className="text-3xl font-bold text-white tracking-tight">
+                 Create your workspace
+            </h1>
+            <p className="text-slate-400 mt-2">
+                You’re logged in, but you don’t belong to any organization yet.
+            </p>
+
+            <div className="mt-6 flex justify-center gap-3">
+                <Link
+                  href="/onboarding/create-org"
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-blue-600/20"
+                >
+                    Create Organization
+                </Link>
+
+                <Link
+                   href="/onboarding/join"
+                   className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition border border-white/10"
+                >
+                    Join with Invite
+                </Link>
+            </div>
+           
+
+        </div>
+    )
+}
+ 
+function DashboardUI(){
+    return (
+        <>
+        <div className="space-y-6 max-w-7xl mx-auto">
         
         <div className="flex items-center justify-between mb-8">
             <div>
@@ -81,8 +169,11 @@ export default function DashboardPage() {
             </div>
         </div>
     </div>
-  );
+
+        </>
+    )
 }
+ 
 
 
 interface StatCardProps {
