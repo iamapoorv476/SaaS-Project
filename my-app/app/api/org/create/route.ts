@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       );
     }
     const body = await request.json();
-    const { name } = body;
+    const { name,slug } = body;
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(
@@ -25,10 +25,25 @@ export async function POST(request: Request) {
       );
     }
     const admin = await getSupabaseAdmin();
+    if(slug){
+      const {data: existingOrg} = await admin
+          .from("organizations")
+          .select("id")
+          .eq("slug", slug)
+          .single();
+
+      if (existingOrg) {
+        return NextResponse.json(
+          { error: "This workspace slug is already taken" },
+          { status: 400 }
+        );
+      }
+    }
     const { data: organization, error: orgError } = await admin
       .from("organizations")
       .insert({
         name: name.trim(),
+        slug: slug || null,
         owner_id: user.id,
       })
       .select()
@@ -63,6 +78,7 @@ export async function POST(request: Request) {
         organization: {
           id: organization.id,
           name: organization.name,
+          slug: organization.slug,
           created_at: organization.created_at,
         },
       },
