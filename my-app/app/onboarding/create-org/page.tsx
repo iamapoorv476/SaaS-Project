@@ -45,7 +45,7 @@ export default  function CreateOrgPage(){
               return;
             }
 
-            router.push("/dashboard");
+            router.push(`/dashboard/${data.organization.id}`);
             router.refresh();
 
         }
