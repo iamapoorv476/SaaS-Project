@@ -36,7 +36,7 @@ export default function AcceptInvitePage() {
                 setError(data?.error || "Failed to Join Invite")
                 return;
             }
-            router.push("/dashboard");
+            router.push(`/dashboard/${data.organization.id}`);
             router.refresh();
         }
         catch(err: any){
