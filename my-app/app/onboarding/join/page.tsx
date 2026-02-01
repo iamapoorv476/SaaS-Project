@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CreateInvitePage() {
+export default function AcceptInvitePage() {
     const router = useRouter();
 
     const [token, setToken] = useState("");
@@ -20,7 +20,7 @@ export default function CreateInvitePage() {
 
         setLoading(true);
         try{
-            const res = await fetch("/api/org/invites/accept", {
+            const res = await fetch("/api/invites/accept", {
                 method: "POST",
                 headers:{
                     "Content-Type": "application/json",

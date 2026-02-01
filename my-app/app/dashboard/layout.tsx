@@ -41,7 +41,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps){
      </aside>
 
          <div className="flex-1 flex flex-col overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/5 blur-[120px] pointer-events-none-z-10"/>
+            <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/5 blur-[120px] pointer-events-none -z-10" />
 
             <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 backdrop-blur-sm z-20 bg-slate-950/50">
                 <h1 className="text-sm font-medium text-slate-400">
