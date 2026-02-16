@@ -1,9 +1,18 @@
 import { getOrgPlan } from "@/app/lib/billing/getOrgPlan";
 import { getSupabaseClient, getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 
+function generateSlug(name: string): string{
+  return name
+       .toLowerCase()
+       .trim()
+       .replace(/[^a-z0-9\s-]/g, "")
+       .replace(/\s+/g, "-")
+       .replace(/-+/g, "-");
+}
+
 export async function POST(req: Request) {
   try {
-    const { organizationId, name } = await req.json();
+    const { organizationId, name, description } = await req.json();
     
     if (!organizationId || !name) {
       return Response.json(
@@ -29,7 +38,7 @@ export async function POST(req: Request) {
       .eq("user_id", user.id)
       .single();
 
-    if (!membership) {
+    if (!membership || !["owner", "admin"].includes(membership.role)) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -46,7 +55,8 @@ export async function POST(req: Request) {
     const { count } = await admin
       .from("projects")
       .select("*", { count: "exact", head: true })
-      .eq("organization_id", organizationId);
+      .eq("organization_id", organizationId)
+      .eq("status", "active");
 
     if ((count ?? 0) >= plan.max_projects) {
       return Response.json(
@@ -57,18 +67,43 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data, error } = await admin
-      .from("projects")
-      .insert({
-        organization_id: organizationId,
-        name,
-      })
-      .select()
-      .single();
+    const baseSlug = generateSlug(name);
+    let slug = baseSlug;
+    let suffix = 1;
 
-    if (error) {
-      return Response.json({ error: error.message }, { status: 500 });
+    while(true){
+
+    const { data: existing } = await admin
+      .from("projects")
+      .select("id")
+      .eq("organization_id", organizationId)
+      .eq("slug", slug)
+      .maybeSingle();
+    
+    if(!existing) break;
+    slug= `${baseSlug}-${suffix++}`;
     }
+    const {data, error} = await admin
+        .from("projects")
+        .insert({
+          organization_id: organizationId,
+          created_by: user.id,
+          name: name.trim(),
+          slug,
+          description: description?.trim() || null,
+          status: "active",
+        })
+        .select()
+        .single();
+      if(error){
+        if(error.code === "23505"){
+          return Response.json(
+            {error:"A project with this name already exists."},
+            {status:409}
+          )
+        }
+        return Response.json({ error: error.message }, { status: 500 });
+      }
 
     await admin.from("audit_logs").insert({
       organization_id: organizationId,
@@ -126,6 +161,7 @@ export async function GET(req: Request) {
       .from("projects")
       .select("*")
       .eq("organization_id", organizationId)
+      .eq("status","active")
       .order("created_at", { ascending: false });
 
     if (error) {

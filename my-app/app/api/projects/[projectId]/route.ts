@@ -1,12 +1,14 @@
-import { getSupabaseServerClient } from "@/app/lib/billing/supabase/server";
+import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 
 export async function DELETE(
     req: Request,
     {params} : {params: {projectId: string}}
 ) {
-    const projectId = params.projectId;
+  try{
 
-    const supabase = getSupabaseServerClient();
+    const {projectId} = params;
+
+    const supabase = await getSupabaseClient();
 
     const {
         data : {user},
@@ -16,13 +18,15 @@ export async function DELETE(
         return Response.json({ error: "Unauthorized" }, { status: 401 });
    }
 
+   const admin = await getSupabaseAdmin();
+
    const { data: project } = await supabase
     .from("projects")
-    .select("organization_id")
+    .select("organization_id,status")
     .eq("id", projectId)
     .single();
 
-   if (!project) {
+   if (!project || project.status === "deleted") {
       return Response.json({ error: "Not found" }, { status: 404 });
    }
 
@@ -33,20 +37,22 @@ export async function DELETE(
     .eq("user_id", user.id)
     .single();
 
-    if (!membership) {
-        return Response.json({ error: "Forbidden" }, { status: 403 });
+    if (!membership || !["owner", "admin"].includes(membership.role)) {
+        return Response.json({ error: "Only admins can delete projects" }, { status: 403 });
     }
 
-    const { error } = await supabase
+    const { error } = await admin
     .from("projects")
-    .delete()
-    .eq("id", projectId);
+     .update({
+        status: "deleted",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", projectId);
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  
   await supabase.from("audit_logs").insert({
     organization_id: project.organization_id,
     actor_id: user.id,
@@ -57,4 +63,8 @@ export async function DELETE(
 
   return Response.json({ success: true });
   
+} catch (error) {
+    console.error("Error in DELETE /api/projects/[projectId]:", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
