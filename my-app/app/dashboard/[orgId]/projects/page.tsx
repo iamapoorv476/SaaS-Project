@@ -28,7 +28,7 @@ export default async function ProjectsPage({
   const { data: projects } = await admin
     .from("projects")
     .select("*")
-    .eq("org_id", orgId)
+    .eq("organization_id", orgId)
     .eq("status", "active")
     .order("created_at", { ascending: false });
 

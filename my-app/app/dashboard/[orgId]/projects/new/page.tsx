@@ -24,10 +24,13 @@ export default function CreateProjectPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/projects/create", {
+      const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description, orgId }),
+        body: JSON.stringify({ 
+          name: name.trim(),
+          description, 
+          organizationId: orgId }),
       });
 
       const data = await res.json();
