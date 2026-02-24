@@ -62,7 +62,10 @@ export async function POST(
 const envPrefix = envMap[environment as keyof typeof envMap];
 
 if (!envPrefix) {
-  throw new Error('Invalid environment');
+  return NextResponse.json(
+    { error: 'Invalid environment. Must be development, staging, or production' },
+    { status: 400 }
+  );
 }
     const rawKey = `sk_${envPrefix}_${nanoid(32)}`
     const prefix = rawKey.substring(0, 14);
@@ -111,6 +114,53 @@ if (!envPrefix) {
   catch(err){
     console.error('Error creating API key:', err);
      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+  }
+
+  export async function GET(
+    req: Request,
+    {params}: {params : {projectId: string}}
+  ){
+    try{
+      const {projectId} = params;
+
+      const supabase = await getSupabaseClient();
+      const {data: {user}}= await supabase.auth.getUser();
+      if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+      const admin = await getSupabaseAdmin();
+
+      const {data: project} = await admin
+            .from('projects')
+            .select('organization_id')
+            .eq('id', projectId)
+            .single();
+        
+       if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+      const { data: membership } = await supabase
+      .from('members')
+      .select('role')
+      .eq('organization_id', project.organization_id)
+      .eq('user_id', user.id)
+      .single();
+
+     if (!membership) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+     const {data: keys, error} = await admin
+           .from('api_keys')
+           .select('id, name, prefix, last_four, scopes, environment, last_used_at, created_at, status')
+           .eq('project_id', projectId)
+           .eq('status', 'active')
+           .order('created_at', { ascending: false });
+      
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+      return NextResponse.json({ keys: keys ?? [] });
+
+    }
+    catch (err) {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
   }
 
