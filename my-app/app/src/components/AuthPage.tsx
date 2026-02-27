@@ -14,12 +14,13 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const [message, setMessage] = useState("");
   const router = useRouter();
   const supabase = createClient();
-  console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log("Supabase Key exists:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-console.log("Supabase client:", supabase);
+//   console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+// console.log("Supabase Key exists:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+// console.log("Supabase client:", supabase);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const supabase = createClient();
     setError("");
     setMessage("");
     setLoading(true);

@@ -44,12 +44,12 @@ export async function POST(req: Request) {
 
     const { plan, status } = await getOrgPlan(organizationId);
     
-    if (status !== "active") {
-      return Response.json(
-        { error: "Subscription inactive" },
-        { status: 403 }
-      );
-    }
+    // if (status !== "active") {
+    //   return Response.json(
+    //     { error: "Subscription inactive" },
+    //     { status: 403 }
+    //   );
+    // }
     const admin = await getSupabaseAdmin();
 
     const { count } = await admin

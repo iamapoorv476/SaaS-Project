@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ApiKeysTable } from "./ApiKeysTable";
 import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 
 export default async function ProjectDashboardPage({
@@ -149,58 +150,14 @@ export default async function ProjectDashboardPage({
           )}
         </div>
 
-         {!apiKeys?.length ? (
-          <div className="px-6 py-12 text-center">
-            <p className="text-slate-400 text-sm">No API keys yet.</p>
-            {isAdmin && (
-              <Link
-                href={`/dashboard/${orgId}/projects/${projectId}/keys/new`}
-                className="inline-block mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition"
-              >
-                Create your first key
-              </Link>
-            )}
-          </div>
-        ) : (
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                     <thead>
-                <tr className="text-slate-500 text-xs uppercase tracking-wide border-b border-white/5">
-                  <th className="px-6 py-3 text-left">Name</th>
-                  <th className="px-6 py-3 text-left">Key</th>
-                  <th className="px-6 py-3 text-left">Environment</th>
-                  <th className="px-6 py-3 text-left">Last Used</th>
-                  <th className="px-6 py-3 text-left">Created</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                   {apiKeys?.map((key)=>(
-                    <tr key={key.id} className="hover:bg-white/5 transition">
-                        <td className="px-6 py-4 text-white font-medium">
-                            {key.name}
-                        </td>
-                         <td className="px-6 py-4 font-mono text-slate-400">
-                      {key.prefix}••••••••
-                    </td>
-                     <td className="px-6 py-4">
-                      <EnvironmentBadge env={key.environment} />
-                    </td>
-                    <td className="px-6 py-4 text-slate-400">
-                      {key.last_used_at
-                        ? new Date(key.last_used_at).toLocaleDateString()
-                        : "Never"}
-                    </td>
-                     <td className="px-6 py-4 text-slate-400">
-                      {new Date(key.created_at).toLocaleDateString()}
-                    </td>
-                    </tr>
-                   ))}
-              </tbody>
-                </table>
-            </div>
-        )}
-        </div>
-
+        <ApiKeysTable
+           apiKeys={apiKeys ?? []}
+           projectId={projectId}
+           orgId={orgId}
+           isAdmin={isAdmin}
+        />
+     </div>
+         
         <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
         <div className="px-6 py-4 border-b border-white/10">
           <h2 className="text-white font-semibold">Recent Activity</h2>
@@ -269,18 +226,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function EnvironmentBadge({ env }: { env: string }) {
-  const styles: Record<string, string> = {
-    development: "bg-blue-500/10 text-blue-400",
-    staging: "bg-yellow-500/10 text-yellow-400",
-    production: "bg-emerald-500/10 text-emerald-400",
-  };
-  return (
-    <span className={`text-xs px-2 py-1 rounded-md font-mono ${styles[env] ?? "bg-slate-500/10 text-slate-400"}`}>
-      {env}
-    </span>
-  );
-}
+
 
 
 

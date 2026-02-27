@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { redis } from '@/app/lib/redis';
+import { trackUsageAsync } from '../lib/billing/usage/track';
 import { getSupabaseAdmin } from '@/app/lib/billing/supabase/server';
 
 type CachedKeyData = {
@@ -10,6 +11,12 @@ type CachedKeyData = {
   environment:string;
   status: string;
 };
+type AuthSuccess = {
+   keyData: CachedKeyData;
+   remaining: number;
+   resetAt: number;
+   track: (statusCode: number, endpoint?: string) => void;
+}
 
 async function validateApiKey(rawKey: string): Promise<CachedKeyData | null>{
   if(!rawKey || !rawKey.startsWith('sk')){
@@ -110,7 +117,9 @@ async function checkRateLimit(keyId: string): Promise<{allowed:boolean; remainin
 export async function withApiKeyAuth(
   req: Request,
   requiredScope?: string
-): Promise<{keyData: CachedKeyData; remaining: number; resetAt: number} | Response>{
+): Promise< AuthSuccess | Response>
+
+  const startTime = Date.now();
 
   const authHeader = req.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
@@ -156,6 +165,18 @@ export async function withApiKeyAuth(
     )
   }
 
+  const track = (statusCode: number, endpoint?: string)=>{
+    trackUsageAsync({
+      api_key_id:keyData.id,
+      project_id: keyData.project_id,
+      organization_id: keyData.organization_id,
+      environment: keyData.environment,
+      status_code: statusCode,
+      response_time_ms: Date.now() - startTime,
+      endpoint: endpoint ?? new URL(req.url).pathname,
+    })
+  }
 
-  return { keyData,remaining,resetAt };
+
+  return { keyData,remaining,resetAt,track };
 }

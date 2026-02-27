@@ -70,7 +70,7 @@ if (!envPrefix) {
     const rawKey = `sk_${envPrefix}_${nanoid(32)}`
     const prefix = rawKey.substring(0, 14);
     const lastFour = rawKey.slice(-4);
-    const key_hash = await bcrypt.hash(rawKey, 12);
+    const hash = await bcrypt.hash(rawKey, 12);
 
     const {data: apiKey , error} = await admin
           .from('api_keys')
@@ -79,7 +79,7 @@ if (!envPrefix) {
             organization_id: project.organization_id,
             created_by: user.id,
             name: name.trim(),
-            key_hash,
+            key_hash:hash,
             prefix,
             last_four: lastFour,
             scopes,
