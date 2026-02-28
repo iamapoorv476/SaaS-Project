@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ApiKeysTable } from "./ApiKeysTable";
 import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
+import { UsageCharts } from "./UsageCharts";
 
 export default async function ProjectDashboardPage({
     params,
@@ -130,11 +131,7 @@ export default async function ProjectDashboardPage({
           value="3"
           subtext="dev · staging · prod"
         />
-        <StatCard
-          title="Usage"
-          value="--"
-          subtext="coming soon"
-        />
+        <UsageCharts projectId={projectId} />
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">

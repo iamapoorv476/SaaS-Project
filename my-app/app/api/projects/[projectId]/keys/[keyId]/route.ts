@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
     req: Request,
-    {params}: {params : {projectId: string; keyId: string}}
+    {params}: {params : Promise<{projectId: string; keyId: string}>}
 ) {
     try{
-        const{ projectId, keyId} = params;
+        const{ projectId, keyId} = await params;
 
         const supabase = await getSupabaseClient();
         const {data: {user}} = await supabase.auth.getUser();

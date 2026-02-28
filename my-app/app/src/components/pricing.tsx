@@ -1,4 +1,60 @@
-export function Pricing() {
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+const PRICE_IDS: Record<string,string> = {
+  Pro: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID!,
+};
+
+export function Pricing({organizationId}: {organizationId?:string}){
+  const router = useRouter();
+  const[loading, setLoading] = useState<string | null>(null);
+
+  const handleCTA = async (tierName: string) =>{
+    if(tierName === "Free"){
+      router.push(organizationId? `/dashboard/${organizationId}`: "/auth/register");
+      return;
+    }
+
+    if(tierName === "Enterprise"){
+      window.location.href = "mailto:sales@yourdomain.com";
+      return;
+    }
+
+    if(!organizationId){
+      router.push("auth/signup");
+      return;
+    }
+
+    setLoading(tierName);
+    try{
+      const res = await fetch("/api/billing/checkout",{
+        method:"POST",
+        headers:{"Content-Type": "application/json"},
+        body: JSON.stringify({
+          organizationId,
+          priceId: PRICE_IDS[tierName],
+        })
+      })
+
+      const data = await res.json();
+
+      if(!res.ok){
+        alert(data.error || "Something went wrong");
+        return;
+      }
+
+      window.location.href = data.url;
+    }
+    catch{
+      alert("Something went wrong. Please try again.");
+    }
+    finally{
+      setLoading(null);
+    }
+  }
+
   const tiers = [
     {
       name: "Free",
@@ -49,10 +105,7 @@ export function Pricing() {
   ];
 
   return (
-    <section
-      id="pricing"
-      className="relative overflow-hidden py-24 sm:py-32 " 
-    >
+    <section id="pricing" className="relative overflow-hidden py-24 sm:py-32">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
@@ -71,10 +124,9 @@ export function Pricing() {
             <div
               key={index}
               className={`relative rounded-2xl p-8 transition-all duration-300 flex flex-col h-full 
-                ${
-                  tier.highlighted
-                    ? "bg-slate-900/60 border border-blue-500/50 shadow-[0_0_40px_-10px_rgba(37,99,235,0.3)] backdrop-blur-xl md:-translate-y-4" // Highlighted styles
-                    : "bg-white/5 border border-white/10 hover:border-white/20 backdrop-blur-lg hover:bg-white/10" // Standard Glass styles
+                ${tier.highlighted
+                  ? "bg-slate-900/60 border border-blue-500/50 shadow-[0_0_40px_-10px_rgba(37,99,235,0.3)] backdrop-blur-xl md:-translate-y-4"
+                  : "bg-white/5 border border-white/10 hover:border-white/20 backdrop-blur-lg hover:bg-white/10"
                 }`}
             >
               {tier.highlighted && (
@@ -84,22 +136,14 @@ export function Pricing() {
               )}
 
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-white leading-7">
-                  {tier.name}
-                </h3>
-                <p className="mt-2 text-sm text-slate-400 h-6">
-                  {tier.description}
-                </p>
+                <h3 className="text-xl font-bold text-white leading-7">{tier.name}</h3>
+                <p className="mt-2 text-sm text-slate-400 h-6">{tier.description}</p>
               </div>
 
               <div className="flex items-baseline gap-x-2 mb-6">
-                <span className="text-5xl font-bold tracking-tight text-white">
-                  {tier.price}
-                </span>
+                <span className="text-5xl font-bold tracking-tight text-white">{tier.price}</span>
                 {tier.period && (
-                  <span className="text-sm font-semibold leading-6 text-slate-400">
-                    {tier.period}
-                  </span>
+                  <span className="text-sm font-semibold leading-6 text-slate-400">{tier.period}</span>
                 )}
               </div>
 
@@ -107,12 +151,9 @@ export function Pricing() {
                 {tier.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex gap-x-3 items-center">
                     <svg
-                      className={`h-5 w-5 flex-none ${
-                        tier.highlighted ? "text-blue-400" : "text-slate-400"
-                      }`}
+                      className={`h-5 w-5 flex-none ${tier.highlighted ? "text-blue-400" : "text-slate-400"}`}
                       viewBox="0 0 20 20"
                       fill="currentColor"
-                      aria-hidden="true"
                     >
                       <path
                         fillRule="evenodd"
@@ -126,18 +167,21 @@ export function Pricing() {
               </ul>
 
               <button
-                className={`w-full rounded-lg px-3 py-3 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-all ${
-                  tier.highlighted
-                    ? "bg-blue-600 text-white hover:bg-blue-500 focus-visible:outline-blue-600 shadow-blue-500/25"
-                    : "bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white"
-                }`}
+                onClick={() => handleCTA(tier.name)}
+                disabled={loading === tier.name}
+                className={`w-full rounded-lg px-3 py-3 text-sm font-semibold shadow-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed
+                  ${tier.highlighted
+                    ? "bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/25"
+                    : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
               >
-                {tier.cta}
+                {loading === tier.name ? "Redirecting..." : tier.cta}
               </button>
             </div>
           ))}
+          </div>          
         </div>
-      </div>
-    </section>
-  );
+      </section>
+
+        )
 }
