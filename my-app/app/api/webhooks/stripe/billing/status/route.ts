@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@/app/lib/billing/supabase/server";
+import { getSupabaseClient } from "@/app/lib/billing/supabase/server";
 import { getOrgPlan } from "@/app/lib/billing/getOrgPlan";
 
 export async function GET(req: Request){
@@ -11,7 +11,7 @@ export async function GET(req: Request){
       { status: 400 }
     );
   }
-  const supabase = getSupabaseServerClient();
+  const supabase = await getSupabaseClient();
    const {
     data : {user},
    } = await supabase.auth.getUser();

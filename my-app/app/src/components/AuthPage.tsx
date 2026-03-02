@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter,useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/app/lib/billing/supabase/client";
 
@@ -13,6 +13,8 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
   const supabase = createClient();
 //   console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 // console.log("Supabase Key exists:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
@@ -36,7 +38,7 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
         if (error) {
           setError(error.message);
         } else {
-          router.push("/dashboard");
+           router.push(redirectTo || "/dashboard");
           router.refresh();
         }
       } else {
@@ -56,7 +58,7 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
           setMessage("Account created! Please check your email to verify.");
           
           setTimeout(() => {
-            router.push("/signin");
+            router.push(redirectTo ? `/signin?redirect=${redirectTo}` : "/signin");
           }, 2000);
         }
       }

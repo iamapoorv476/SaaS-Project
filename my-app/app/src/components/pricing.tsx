@@ -13,7 +13,7 @@ export function Pricing({organizationId}: {organizationId?:string}){
 
   const handleCTA = async (tierName: string) =>{
     if(tierName === "Free"){
-      router.push(organizationId? `/dashboard/${organizationId}`: "/auth/register");
+      router.push(organizationId? `/dashboard/${organizationId}`: "/signup");
       return;
     }
 
@@ -23,7 +23,7 @@ export function Pricing({organizationId}: {organizationId?:string}){
     }
 
     if(!organizationId){
-      router.push("auth/signup");
+      router.push(`/signin?redirect=/billing/upgrade`);
       return;
     }
 
