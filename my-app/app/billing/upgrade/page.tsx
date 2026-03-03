@@ -20,5 +20,16 @@ export default async function BillingUpgradePage() {
 
   if (!membership) redirect("/dashboard");
 
+  const { data: subscription } = await admin
+    .from("subscriptions")
+    .select("status, plan_id")
+    .eq("organization_id", membership.organization_id)
+    .single();
+
+  if (subscription?.status === "active") {
+    // Already subscribed — redirect to billing page instead
+    redirect("/dashboard?message=already_subscribed");
+  }
+
   return <AutoCheckout organizationId={membership.organization_id} />;
 }

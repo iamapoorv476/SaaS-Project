@@ -31,6 +31,11 @@ export async function POST(req:Request){
         payment_method_types: ["card"],
 
         customer : org?.stripe_customer_id ?? undefined,
+        subscription_data: {
+    metadata: {
+      organization_id: organizationId,
+    },
+  },
          line_items : [
             {
                 price :priceId,
