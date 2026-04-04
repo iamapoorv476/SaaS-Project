@@ -10,13 +10,11 @@ type UsageEvent={
     endpoint?: string;
 }
 
-export function trackUsageAsync(event: UsageEvent){
-    getSupabaseAdmin()
-      .then((admin)=>
-       admin.from('api_usage_logs').insert({
-        ...event,
-        created_at:new Date().toISOString(),
-       })
-    )
-    .catch((err)=> console.error('Failed to track usage:', err));
+export async function trackUsageAsync(params: any) {
+  try {
+    const admin = await getSupabaseAdmin();
+    await admin.from('usage_events').insert({...params});
+  } catch(err) {
+    console.error('Failed to track usage:', err);
+  }
 }

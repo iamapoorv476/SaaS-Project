@@ -1,39 +1,15 @@
 import { withApiKeyAuth } from "@/app/middleware/auth";
-import { redis } from "@/app/lib/redis";
+import { checkTokenQuota, trackTokenUsage } from "@/app/lib/ai/quota";
+//import { redis } from "@/app/lib/redis";
 import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-const MONTHLY_TOKEN_LIMIT= 100_000;
+const MODEL = 'claude-haiku-4-5-20251001';
 
-async function checkTokenQuota(projectId: string): Promise<{
-    allowed:boolean;
-    used:number;
-    limit:number;
-}> {
-    const monthKey= new Date().toISOString().slice(0,7);
-    const quotaKey= `tokenquota:${projectId}:${monthKey}`;
-    try{
-        const used = await redis.get(quotaKey);
-        const usedTokens = used ? parseInt(used as string) : 0;
-        return {allowed: usedTokens < MONTHLY_TOKEN_LIMIT, used: usedTokens, limit: MONTHLY_TOKEN_LIMIT};
-    } catch{
-        return {allowed: true, used: 0, limit: MONTHLY_TOKEN_LIMIT};
-    }
-}
 
-async function incrementTokenUsage(projectId:string, tokens:number): Promise<void>{
-    const monthKey = new Date().toISOString().slice(0,7);
-    const quotaKey=`tokenquota:${projectId}:${monthKey}`;
-    try{
-        await redis.incrby(quotaKey,tokens);
-        await redis.expire(quotaKey, 60 * 60 * 24 * 35);
-    } catch{
-        console.warn('Failed to increment token usage');
-    }
-}
 
 export async function POST(req: Request){
     const auth = await withApiKeyAuth(req, 'ai:chat');
@@ -56,12 +32,17 @@ export async function POST(req: Request){
         return Response.json({error: 'Invalid JSON body'}, {status: 400});
     }
 
-    const quota = await checkTokenQuota(keyData.project_id);
+    const quota = await checkTokenQuota(keyData.project_id, keyData.organization_id);
     if (!quota.allowed) {
       track(429, '/api/v1/chat');
       return Response.json(
         { error: 'Monthly token quota exceeded.', quota: { used: quota.used, limit: quota.limit } },
-        { status: 429 }
+        { status: 429,
+          headers:{
+            'X-Token-Used': String(quota.used),
+            'X-Token-Limit': String(quota.limit),
+          }
+         }
     );
   }
   try{
@@ -82,15 +63,41 @@ export async function POST(req: Request){
                 }
             }
             const finalMessage = await stream.finalMessage();
-            const totalTokens = finalMessage.usage.input_tokens + finalMessage.usage.output_tokens;
-            await incrementTokenUsage(keyData.project_id, totalTokens);
-            controller.enqueue(encoder.encode(` data: ${JSON.stringify({usage:finalMessage.usage})}\n\n`));
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
-            track(200, '/api/v1/chat');
-       
-        },
-        cancel() {stream.abort();},
+            const inputTokens = finalMessage.usage.input_tokens;
+            const outputTokens = finalMessage.usage.output_tokens;
+            await trackTokenUsage({
+             projectId: keyData.project_id,
+            organizationId: keyData.organization_id,
+            apiKeyId: keyData.id,
+            inputTokens,
+            outputTokens,
+            model: MODEL,
+            endpoint: '/api/v1/chat',
+        });
+            // const totalTokens = finalMessage.usage.input_tokens + finalMessage.usage.output_tokens;
+            
+         controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              usage: {
+                input_tokens: inputTokens,
+                output_tokens: outputTokens,
+                total_tokens: inputTokens + outputTokens,
+                remaining_tokens: quota.limit - quota.used - inputTokens - outputTokens,
+              },
+            })}\n\n`
+          )
+        );
+ 
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+ 
+        track(200, '/api/v1/chat');
+      },
+ 
+      cancel() {
+        stream.abort();
+      },
     });
 
     return new Response(readable, {
@@ -98,6 +105,8 @@ export async function POST(req: Request){
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
+            'X-Token-Used': String(quota.used),
+            'X-Token-Limit': String(quota.limit),
         }
 
     })
