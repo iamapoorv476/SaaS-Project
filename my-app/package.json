@@ -9,13 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
+    "@upstash/redis": "^1.36.3",
     "@vercel/analytics": "^1.6.1",
+    "ai": "^6.0.146",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^0.562.0",
     "nanoid": "^5.1.6",
     "next": "16.0.10",
+    "openai": "^6.33.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "recharts": "^3.7.0",

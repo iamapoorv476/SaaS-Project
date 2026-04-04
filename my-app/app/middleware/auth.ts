@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { redis } from '@/app/lib/redis';
-import { trackUsageAsync } from '../lib/billing/usage/track';
+import { trackUsageAsync } from '@/app/lib/billing/usage/track';
 import { getSupabaseAdmin } from '@/app/lib/billing/supabase/server';
 
 type CachedKeyData = {
@@ -77,15 +77,16 @@ async function validateApiKey(rawKey: string): Promise<CachedKeyData | null>{
    return cachePayload;
 }
 
-function updateLastUsedAsync(keyId: string){
-  getSupabaseAdmin()
-     .then((admin) => 
-      admin
-       .from('api_keys')
-       .update({ last_used_at: new Date().toISOString() })
-       .eq('id', keyId)   
-    )
-    .catch((err) => console.error('Failed to update last_used_at:', err));
+async function updateLastUsedAsync(keyId: string){
+  try {
+    const admin = await getSupabaseAdmin();
+    await admin
+      .from('api_keys')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('id', keyId);
+  } catch(err) {
+    console.error('Failed to update last_used_at:', err);
+  }
 }
 
 async function checkRateLimit(keyId: string): Promise<{allowed:boolean; remaining: number; resetAt: number}>{
@@ -117,7 +118,7 @@ async function checkRateLimit(keyId: string): Promise<{allowed:boolean; remainin
 export async function withApiKeyAuth(
   req: Request,
   requiredScope?: string
-): Promise< AuthSuccess | Response>
+): Promise< AuthSuccess | Response> {
 
   const startTime = Date.now();
 
