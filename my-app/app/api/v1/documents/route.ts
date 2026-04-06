@@ -53,9 +53,9 @@ export async function POST(req: Request){
            const chunks = chunkText(content);
 
            if (chunks.length === 0) {
-      track(400, '/api/v1/documents');
-      return Response.json({ error: 'Content too short to process' }, { status: 400 });
-    }
+             track(400, '/api/v1/documents');
+             return Response.json({ error: 'Content too short to process' }, { status: 400 });
+           }
 
     const embeddings = await embedBatch(chunks);
 
