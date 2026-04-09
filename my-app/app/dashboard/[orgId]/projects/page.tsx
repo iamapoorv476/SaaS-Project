@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
 import { getSupabaseClient, getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 
 export default async function ProjectsPage({

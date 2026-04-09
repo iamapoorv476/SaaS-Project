@@ -8,6 +8,8 @@ const SCOPES = [
   { value: "read", label: "Read", description: "Read data from the API" },
   { value: "write", label: "Write", description: "Create and update resources" },
   { value: "delete", label: "Delete", description: "Delete resources" },
+  { value: 'ai:chat', label: 'AI Chat', description: 'Access the AI chat endpoint' },
+  { value: 'ai:embed', label: 'AI Embed', description: 'Upload and embed documents' },
 ];
 
 const ENVIRONMENTS = ["development", "staging", "production"];
@@ -119,7 +121,7 @@ export default function NewApiKeyPage() {
 
           <button
             onClick={() =>
-              router.push(`/dashboard/${orgId}/projects/${projectId}`)
+              router.push(`/dashboard/${orgId}/projects/${projectId}/playground`)
             }
             className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition"
           >

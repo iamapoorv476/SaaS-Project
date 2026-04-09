@@ -38,7 +38,7 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
         if (error) {
           setError(error.message);
         } else {
-           router.push(redirectTo || "/dashboard");
+           router.push(redirectTo || "/dashboard")
           router.refresh();
         }
       } else {
