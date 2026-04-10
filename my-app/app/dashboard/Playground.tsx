@@ -1,4 +1,5 @@
 'use client';
+import ReactMarkdown from 'react-markdown';
 import { Message } from "@anthropic-ai/sdk/resources";
 import { useEffect,useRef,useState } from "react";
 
@@ -173,7 +174,7 @@ function ChatMessage({message}: {message: Messages}) {
                 : 'bg-slate-800 text-slate-200 rounded-bl-sm'
             }`}
             >
-                {message.content}
+                <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
         </div>
 
@@ -268,8 +269,8 @@ function ChatPanel({apiKey}: {apiKey: string}){
     const decoder = new TextDecoder();
 
     let fullText = '';
-    let sources: Message['sources'] = [];
-    let tokens: Message['tokens'];
+    let finalSources: Message['sources'] = [];
+    let finalTokens: Message['tokens'];
 
     while (true) {
       const { done, value } = await reader.read();
@@ -277,12 +278,14 @@ function ChatPanel({apiKey}: {apiKey: string}){
       if (done) break;
 
       const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
 
-      const lines = chunk
-        .split('\n')
-        .filter((l) => l.startsWith('data: '));
+      // const lines = chunk
+      //   .split('\n')
+      //   .filter((l) => l.startsWith('data: '));
 
       for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
         const raw = line.slice(6).trim();
 
         if (raw === '[DONE]') {
@@ -304,12 +307,12 @@ function ChatPanel({apiKey}: {apiKey: string}){
             );
           }
 
-          if (parsed.rag?.sources) {
-            sources = parsed.rag.sources;
+          if (parsed.rag?.sources?.length > 0) {
+            finalSources = parsed.rag.sources;
           }
 
           if (parsed.usage) {
-            tokens = {
+           finalTokens = {
               input: parsed.usage.input_tokens,
               output: parsed.usage.output_tokens,
               total: parsed.usage.total_tokens,
@@ -324,7 +327,7 @@ function ChatPanel({apiKey}: {apiKey: string}){
     setMessages((prev) =>
       prev.map((m) =>
         m.id === assistantId
-          ? { ...m, sources, tokens }
+          ? { ...m, sources: finalSources, tokens: finalTokens }
           : m
       )
     );
