@@ -224,101 +224,128 @@ function ChatPanel({apiKey}: {apiKey: string}){
         bottomRef.current?.scrollIntoView({behavior: 'smooth'});
     }, [messages]);
 
-    async function sendMessage(){
-        const text = input.trim();
-        if(!text || streaming) return;
+    async function sendMessage() {
+  const text = input.trim();
+  if (!text || streaming) return;
 
-        const userMessage: Message ={
-            id: Date.now().toString(),
-            role: 'user',
-            content: text,
-        };
-        const assistantId = (Date.now() + 1).toString();
-        const assistantMessage: Message ={
-            id: assistantId,
-            role:'assistant',
-            content:'',
-        };
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    role: 'user',
+    content: text,
+  };
 
-        setMessages((prev) => [...prev,userMessage,assistantMessage]);
-        setInput('');
-        setStreaming(true);
+  const assistantId = (Date.now() + 1).toString();
 
-        try{
-            const history = [...messages,userMessage]
-            .filter((m)=> m.id!== 'welcome')
-            .map((m)=> ({role:m.role, content:m.content}))
-            
-            const res = await fetch('/api/v1/chat', {
-             method: 'POST',
-             headers: {
-              Authorization: `Bearer ${apiKey}`,
-             'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ messages: history }),
-      });
- 
-      if (!res.ok || !res.body) {
-        throw new Error('Request failed');
+  const assistantMessage: Message = {
+    id: assistantId,
+    role: 'assistant',
+    content: '',
+  };
+
+  setMessages((prev) => [...prev, userMessage, assistantMessage]);
+  setInput('');
+  setStreaming(true);
+
+  try {
+    const history = [...messages, userMessage]
+      .filter((m) => m.id !== 'welcome')
+      .map((m) => ({ role: m.role, content: m.content }));
+
+    const res = await fetch('/api/v1/chat', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ messages: history }),
+    });
+
+    if (!res.ok || !res.body) {
+      throw new Error('Request failed');
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    let fullText = '';
+    let sources: Message['sources'] = [];
+    let tokens: Message['tokens'];
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+
+      const lines = chunk
+        .split('\n')
+        .filter((l) => l.startsWith('data: '));
+
+      for (const line of lines) {
+        const raw = line.slice(6).trim();
+
+        if (raw === '[DONE]') {
+          break;
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+
+          if (parsed.text) {
+            fullText += parsed.text;
+
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantId
+                  ? { ...m, content: fullText }
+                  : m
+              )
+            );
+          }
+
+          if (parsed.rag?.sources) {
+            sources = parsed.rag.sources;
+          }
+
+          if (parsed.usage) {
+            tokens = {
+              input: parsed.usage.input_tokens,
+              output: parsed.usage.output_tokens,
+              total: parsed.usage.total_tokens,
+            };
+          }
+        } catch (e) {
+          console.error('Parse error:', e);
+        }
       }
-
-      const reader =res.body.getReader();
-      const decoder = new TextDecoder();
-      let fullText ='';
-      let sources: Message['sources'] = [];
-      let tokens: Message['tokens'];
-
-      while(true){
-        const {done,value} =await reader.read();
-        const chunk = decoder.decode(value, {stream:true})
-        const lines = chunk.split('\n').filter((l) => l.startsWith('data: '));
-
-        for (const line of lines) {
-            const raw = line.slice(6).trim();
-            if(raw === '[DONE') break;
-            try{
-                const parsed = JSON.parse(raw);
-                 if (parsed.text) {
-                fullText = fullText + parsed.text;
-                setMessages((prev)=>
-                  prev.map((m)=>
-                  m.id === assistantId ?  {...m,content: fullText}: m
-            )
-        );
     }
 
-    if(parsed.rag?.sources){
-        sources = parsed.rag.sources;
-    }
-
-    if(parsed.usage){
-        tokens = {
-            input:parsed.usage.input_tokens,
-            output:parsed.usage.output_tokens,
-            total:parsed.usage.total_tokens,
-        }
-    }
- } catch{
-
- }
-        }
-    }
     setMessages((prev) =>
       prev.map((m) =>
-       m.id === assistantId ? {...m, sources, tokens} : m
-)
-)
- } catch(err){
-    setMessages((prev) => 
-    prev.map((m)=>
-     m.id === assistantId ? {...m , content: 'Something went wrong. Please try again.'}
-     : m
-)
-)
- } finally {
+        m.id === assistantId
+          ? { ...m, sources, tokens }
+          : m
+      )
+    );
+  } catch (err) {
+    console.error('Stream error:', err);
+
+    // only overwrite if nothing streamed
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === assistantId && !m.content
+          ? {
+              ...m,
+              content: 'Something went wrong. Please try again.',
+            }
+          : m
+      )
+    );
+  } finally {
     setStreaming(false);
     inputRef.current?.focus();
- }
+  }
 }
 function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
