@@ -73,29 +73,31 @@ export async function trackTokenUsage(params: {
   const monthKey = new Date().toISOString().slice(0, 7);
   const quotaKey = `tokenquota:${params.projectId}:${monthKey}`;
   const totalTokens = params.inputTokens + params.outputTokens;
- 
-  // Redis update (fast path — always do this)
+
+  // Redis update
   try {
     await redis.incrby(quotaKey, totalTokens);
     await redis.expire(quotaKey, 60 * 60 * 24 * 35);
   } catch {
     console.warn('Redis token increment failed');
   }
- 
-  // Supabase insert (persistent audit trail — async, don't await)
-  getSupabaseAdmin()
-    .then((admin) =>
-      admin.from('token_usage').insert({
-        organization_id: params.organizationId,
-        api_key_id: params.apiKeyId,
-        project_id: params.projectId,
-        input_tokens: params.inputTokens,
-        output_tokens: params.outputTokens,
-        model: params.model,
-        endpoint: params.endpoint,
-        created_at: new Date().toISOString(),
-      })
-    )
-    .catch((err) => console.error('Failed to persist token usage:', err));
+
+  // Supabase insert (fire-and-forget but SAFE)
+  try {
+    const admin = await getSupabaseAdmin();
+
+    await admin.from('token_usage').insert({
+      organization_id: params.organizationId,
+      api_key_id: params.apiKeyId,
+      project_id: params.projectId,
+      input_tokens: params.inputTokens,
+      output_tokens: params.outputTokens,
+      total_tokens: totalTokens,
+      model: params.model,
+      endpoint: params.endpoint,
+      created_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('Failed to persist token usage:', err);
+  }
 }
- 

@@ -119,61 +119,66 @@ ${ragContext}
     let inputTokens = 0;
     let outputTokens = 0;
 
-    for await (const chunk of stream) {
-      if (
-        chunk.type === "content_block_delta" &&
-        chunk.delta.type === "text_delta"
-      ) {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`
-          )
-        );
+    try {
+      for await (const chunk of stream) {
+        if (
+          chunk.type === "content_block_delta" &&
+          chunk.delta?.type === "text_delta"
+        ) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`
+            )
+          );
+        }
+
+        // SAFE usage extraction
+        if (chunk.type === "message_stop" && chunk.message?.usage) {
+          inputTokens = chunk.message.usage.input_tokens ?? 0;
+          outputTokens = chunk.message.usage.output_tokens ?? 0;
+        }
       }
 
-      // capture usage here instead of calling finalMessage()
-      if (chunk.type === "message_stop") {
-        inputTokens = chunk.message.usage.input_tokens;
-        outputTokens = chunk.message.usage.output_tokens;
-      }
+      await trackTokenUsage({
+        projectId: keyData.project_id,
+        organizationId: keyData.organization_id,
+        apiKeyId: keyData.id,
+        inputTokens,
+        outputTokens,
+        model: MODEL,
+        endpoint: "/api/v1/chat",
+      });
+
+      controller.enqueue(
+        encoder.encode(
+          `data: ${JSON.stringify({
+            usage: {
+              input_tokens: inputTokens,
+              output_tokens: outputTokens,
+              total_tokens: inputTokens + outputTokens,
+            },
+            rag: {
+              context_used: ragContext.length > 0,
+              sources_count: sources.length,
+              sources,
+            },
+          })}\n\n`
+        )
+      );
+
+      controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+      controller.close();
+
+    } catch (err) {
+      console.error("Streaming error:", err);
+      controller.error(err);
     }
-
-    await trackTokenUsage({
-      projectId: keyData.project_id,
-      organizationId: keyData.organization_id,
-      apiKeyId: keyData.id,
-      inputTokens,
-      outputTokens,
-      model: MODEL,
-      endpoint: "/api/v1/chat",
-    });
-
-    controller.enqueue(
-      encoder.encode(
-        `data: ${JSON.stringify({
-          usage: {
-            input_tokens: inputTokens,
-            output_tokens: outputTokens,
-            total_tokens: inputTokens + outputTokens,
-          },
-          rag: {
-            context_used: ragContext.length > 0,
-            sources_count: sources.length,
-            sources,
-          },
-        })}\n\n`
-      )
-    );
-
-    controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
-    controller.close();
   },
 
   cancel() {
     stream.abort();
   },
 });
-
     return new Response(readable, {
       headers: {
         'Content-Type': 'text/event-stream',
