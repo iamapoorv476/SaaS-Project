@@ -4,6 +4,9 @@ import { embedText } from '@/app/lib/ai/embeddings';
 import { getSupabaseAdmin } from '@/app/lib/billing/supabase/server';
 import Anthropic from '@anthropic-ai/sdk';
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
@@ -109,68 +112,72 @@ ${ragContext}
       messages,
     });
 
-    const readable = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder();
+   const readable = new ReadableStream({
+  async start(controller) {
+    const encoder = new TextEncoder();
 
-        for await (const chunk of stream) {
-          if (
-            chunk.type === 'content_block_delta' &&
-            chunk.delta.type === 'text_delta'
-          ) {
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`
-              )
-            );
-          }
-        }
+    let inputTokens = 0;
+    let outputTokens = 0;
 
-        const finalMessage = await stream.finalMessage();
-        const inputTokens = finalMessage.usage.input_tokens;
-        const outputTokens = finalMessage.usage.output_tokens;
-
-        await trackTokenUsage({
-          projectId: keyData.project_id,
-          organizationId: keyData.organization_id,
-          apiKeyId: keyData.id,
-          inputTokens,
-          outputTokens,
-          model: MODEL,
-          endpoint: '/api/v1/chat',
-        });
-
+    for await (const chunk of stream) {
+      if (
+        chunk.type === "content_block_delta" &&
+        chunk.delta.type === "text_delta"
+      ) {
         controller.enqueue(
           encoder.encode(
-            `data: ${JSON.stringify({
-              usage: {
-                input_tokens: inputTokens,
-                output_tokens: outputTokens,
-                total_tokens: inputTokens + outputTokens,
-              },
-              rag: {
-                context_used: ragContext.length > 0,
-                sources_count: sources.length,
-                sources,
-              },
-            })}\n\n`
+            `data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`
           )
         );
+      }
 
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-        track(200, '/api/v1/chat');
-      },
+      // capture usage here instead of calling finalMessage()
+      if (chunk.type === "message_stop") {
+        inputTokens = chunk.message.usage.input_tokens;
+        outputTokens = chunk.message.usage.output_tokens;
+      }
+    }
 
-      cancel() {
-        stream.abort();
-      },
+    await trackTokenUsage({
+      projectId: keyData.project_id,
+      organizationId: keyData.organization_id,
+      apiKeyId: keyData.id,
+      inputTokens,
+      outputTokens,
+      model: MODEL,
+      endpoint: "/api/v1/chat",
     });
+
+    controller.enqueue(
+      encoder.encode(
+        `data: ${JSON.stringify({
+          usage: {
+            input_tokens: inputTokens,
+            output_tokens: outputTokens,
+            total_tokens: inputTokens + outputTokens,
+          },
+          rag: {
+            context_used: ragContext.length > 0,
+            sources_count: sources.length,
+            sources,
+          },
+        })}\n\n`
+      )
+    );
+
+    controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+    controller.close();
+  },
+
+  cancel() {
+    stream.abort();
+  },
+});
 
     return new Response(readable, {
       headers: {
         'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
         'X-Token-Used': String(quota.used),
         'X-Token-Limit': String(quota.limit),

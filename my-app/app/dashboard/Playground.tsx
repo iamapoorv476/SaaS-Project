@@ -323,6 +323,7 @@ function ChatPanel({apiKey}: {apiKey: string}){
         }
       }
     }
+    console.log('Sources received:', finalSources);
 
     setMessages((prev) =>
       prev.map((m) =>
