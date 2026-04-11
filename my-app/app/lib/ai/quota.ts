@@ -74,7 +74,6 @@ export async function trackTokenUsage(params: {
   const quotaKey = `tokenquota:${params.projectId}:${monthKey}`;
   const totalTokens = params.inputTokens + params.outputTokens;
 
-  // Redis update
   try {
     await redis.incrby(quotaKey, totalTokens);
     await redis.expire(quotaKey, 60 * 60 * 24 * 35);
@@ -82,7 +81,6 @@ export async function trackTokenUsage(params: {
     console.warn('Redis token increment failed');
   }
 
-  // Supabase insert (fire-and-forget but SAFE)
   try {
     const admin = await getSupabaseAdmin();
 
