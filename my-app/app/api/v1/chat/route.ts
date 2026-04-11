@@ -132,12 +132,10 @@ ${ragContext}
           );
         }
 
-        // SAFE usage extraction
-        if (chunk.type === "message_stop" && chunk.message?.usage) {
-          inputTokens = chunk.message.usage.input_tokens ?? 0;
-          outputTokens = chunk.message.usage.output_tokens ?? 0;
-        }
-      }
+        if (chunk.type === "message_delta" && chunk.usage) {
+  inputTokens = chunk.usage.input_tokens ?? 0;
+  outputTokens = chunk.usage.output_tokens ?? 0;
+}
 
       await trackTokenUsage({
         projectId: keyData.project_id,
