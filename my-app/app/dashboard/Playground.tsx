@@ -1,6 +1,6 @@
 'use client';
 import ReactMarkdown from 'react-markdown';
-import { Message } from "@anthropic-ai/sdk/resources";
+// import { Message } from "@anthropic-ai/sdk/resources";
 import { useEffect,useRef,useState } from "react";
 
 type Messages = {
@@ -8,7 +8,7 @@ type Messages = {
     role: 'user' | 'assistant';
     content: string;
     sources?: {id: string, content: string, similarity: number}[];
-    token?: {input: number, output: number, total: number};
+    tokens?: {input: number, output: number, total: number};
 };
 
 type Document = {
@@ -208,7 +208,7 @@ function ChatMessage({message}: {message: Messages}) {
 }
 
 function ChatPanel({apiKey}: {apiKey: string}){
-    const [messages, setMessages] = useState<Message[]>([
+    const [messages, setMessages] = useState<Messages[]>([
         {
             id:'Welcome',
             role:'assistant',
@@ -229,7 +229,7 @@ function ChatPanel({apiKey}: {apiKey: string}){
   const text = input.trim();
   if (!text || streaming) return;
 
-  const userMessage: Message = {
+  const userMessage: Messages = {
     id: Date.now().toString(),
     role: 'user',
     content: text,
@@ -237,7 +237,7 @@ function ChatPanel({apiKey}: {apiKey: string}){
 
   const assistantId = (Date.now() + 1).toString();
 
-  const assistantMessage: Message = {
+  const assistantMessage: Messages = {
     id: assistantId,
     role: 'assistant',
     content: '',
@@ -269,8 +269,8 @@ function ChatPanel({apiKey}: {apiKey: string}){
     const decoder = new TextDecoder();
 
     let fullText = '';
-    let finalSources: Message['sources'] = [];
-    let finalTokens: Message['tokens'];
+    let finalSources: Messages['sources'] = [];
+    let finalTokens: Messages['tokens'];
 
     while (true) {
       const { done, value } = await reader.read();
