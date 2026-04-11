@@ -43,6 +43,7 @@ export async function POST(req: Request) {
     }
 
     const { plan, status } = await getOrgPlan(organizationId);
+    const resolvedPlan = Array.isArray(plan) ? plan[0] : plan;
     
     // if (status !== "active") {
     //   return Response.json(
@@ -58,15 +59,14 @@ export async function POST(req: Request) {
       .eq("organization_id", organizationId)
       .eq("status", "active");
 
-    if ((count ?? 0) >= plan.max_projects) {
-      return Response.json(
-        {
-          error: `Project limit reached (${count}/${plan.max_projects}). Upgrade to Pro.`,
-        },
-        { status: 403 }
-      );
-    }
-
+    if ((count ?? 0) >= resolvedPlan.max_projects) {
+  return Response.json(
+    {
+      error: `Project limit reached (${count}/${resolvedPlan.max_projects}). Upgrade to Pro.`,
+    },
+    { status: 403 }
+  );
+}
     const baseSlug = generateSlug(name);
     let slug = baseSlug;
     let suffix = 1;
