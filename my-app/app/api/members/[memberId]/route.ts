@@ -1,10 +1,10 @@
-import { getSupabaseServerClient } from "@/app/lib/billing/supabase/server";
+import { getSupabaseClient } from "@/app/lib/billing/supabase/server";
 
 export async function DELETE(
     req: Request,
     {params}: {params: {memberId: string}}
 ) {
-    const supabase = getSupabaseServerClient();
+    const supabase = await getSupabaseClient();
     const memberId = params.memberId;
 
     const {
