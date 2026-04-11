@@ -2,11 +2,11 @@ import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/s
 
 export async function DELETE(
     req: Request,
-    {params} : {params: {projectId: string}}
+    {params} : {params: Promise<{projectId: string}>}
 ) {
   try{
 
-    const {projectId} = params;
+    const {projectId} = await params;
 
     const supabase = await getSupabaseClient();
 
