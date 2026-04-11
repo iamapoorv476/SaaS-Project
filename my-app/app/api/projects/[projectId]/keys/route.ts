@@ -119,10 +119,10 @@ if (!envPrefix) {
 
   export async function GET(
     req: Request,
-    {params}: {params : {projectId: string}}
+    {params}: {params : Promise<{projectId: string}>}
   ){
     try{
-      const {projectId} = params;
+      const {projectId} = await params;
 
       const supabase = await getSupabaseClient();
       const {data: {user}}= await supabase.auth.getUser();
