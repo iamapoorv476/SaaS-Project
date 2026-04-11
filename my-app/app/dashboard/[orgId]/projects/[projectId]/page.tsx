@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ApiKeysTable } from "./ApiKeysTable";
-import { TokenUsageCard } from "@/app/dashboard/TokenUsageCard";
+import { TokenUsageCard } from "@/app/components/dashboard/TokenUsageCard";
 import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 import { UsageCharts } from "./UsageCharts";
 
