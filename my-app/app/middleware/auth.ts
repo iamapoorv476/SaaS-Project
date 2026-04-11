@@ -27,7 +27,7 @@ async function validateApiKey(rawKey: string): Promise<CachedKeyData | null>{
   try{
     const cached = await redis.get(cacheKey);
     if(cached){
-      return JSON.parse(cached) as CachedKeyData;
+      return (typeof cached === 'string' ? JSON.parse(cached) : cached) as CachedKeyData;
     }
   } catch {
     console.warn('Redis cache miss/failure, falling back to DB');
