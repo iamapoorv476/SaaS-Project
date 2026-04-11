@@ -38,7 +38,7 @@ export async function GET(){
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  const organizations = (data as Membership[])
+  const organizations = (data as unknown as Membership[])
        .filter(m => m.organizations !==null)
        .map(m => ({
         id: m.organizations!.id,
