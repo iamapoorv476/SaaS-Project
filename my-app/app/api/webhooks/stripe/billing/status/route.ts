@@ -38,6 +38,7 @@ export async function GET(req: Request){
   }
 
   const { plan, status } = await getOrgPlan(organizationId);
+  const resolvedPlan = Array.isArray(plan) ? plan[0] : plan;
   const [{ count: projectCount }, { count: memberCount }] =
     await Promise.all([
       supabase
@@ -52,16 +53,16 @@ export async function GET(req: Request){
     ]);
 
   return Response.json({
-    plan: plan.slug,
-    status,
-    usage: {
-      projects: `${projectCount}/${plan.max_projects}`,
-      members: `${memberCount}/${plan.max_members}`,
-    },
-    limits: {
-      max_projects: plan.max_projects,
-      max_members: plan.max_members,
-    },
-    role: membership.role,
-  });
+  plan: resolvedPlan.slug,
+  status,
+  usage: {
+    projects: `${projectCount}/${resolvedPlan.max_projects}`,
+    members: `${memberCount}/${resolvedPlan.max_members}`,
+  },
+  limits: {
+    max_projects: resolvedPlan.max_projects,
+    max_members: resolvedPlan.max_members,
+  },
+  role: membership.role,
+});
 }
