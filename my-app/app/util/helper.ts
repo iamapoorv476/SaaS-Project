@@ -1,5 +1,7 @@
+import { getSupabaseAdmin } from "../lib/billing/supabase/server";
 async function getPlanByPriceID(priceId : string){
-    const {data, error} = await supabase
+    const admin = await getSupabaseAdmin();
+    const {data, error} = await admin
          .from("subscription_plans")
          .select("id")
          .eq("stripe_price_id", priceId)
