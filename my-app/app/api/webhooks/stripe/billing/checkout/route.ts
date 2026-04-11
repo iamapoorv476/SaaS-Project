@@ -6,7 +6,7 @@ console.log("success_url:", `${process.env.NEXT_PUBLIC_APP_URL}/billing/success`
 console.log("cancel_url:", `${process.env.NEXT_PUBLIC_APP_URL}/billing/cancel`);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!,{
-    apiVersion:"2025-04-30.basil",
+    apiVersion:"2026-02-25.clover",
 });
 
 const supabase = createClient(
