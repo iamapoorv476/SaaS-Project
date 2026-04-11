@@ -16,8 +16,9 @@ async function getOrgTokenLimit(organizationId: string): Promise<number> {
 
         if (!data) return DEFAULT_FREE_LIMIT;
 
-        const plan = data.subscription_plans as { monthly_token_limit: number } | null;
-        return plan?.monthly_token_limit ?? DEFAULT_FREE_LIMIT;
+        const rawPlan = data.subscription_plans;
+const plan = (Array.isArray(rawPlan) ? rawPlan[0] : rawPlan) as { monthly_token_limit: number } | null;
+return plan?.monthly_token_limit ?? DEFAULT_FREE_LIMIT;
     } catch{
         return DEFAULT_FREE_LIMIT;
     }
