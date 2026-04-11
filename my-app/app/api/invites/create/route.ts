@@ -42,20 +42,22 @@ export async function POST(req: Request) {
   }
 
   const { plan } = await getOrgPlan(organizationId);
+  const resolvedPlan = Array.isArray(plan) ? plan[0] : plan;
+
 
   const { count } = await admin
     .from("members")
     .select("*", { count: "exact", head: true })
     .eq("organization_id", organizationId);
 
-  if ((count ?? 0) >= plan.max_members) {
-    return Response.json(
-      {
-        error: `Member limit reached (${count}/${plan.max_members}). Upgrade to Pro.`,
-      },
-      { status: 403 }
-    );
-  }
+  if ((count ?? 0) >= resolvedPlan.max_members) {
+  return Response.json(
+    {
+      error: `Member limit reached (${count}/${resolvedPlan.max_members}). Upgrade to Pro.`,
+    },
+    { status: 403 }
+  );
+}
    const { data: existingInvite } = await admin
     .from("invites")
     .select("id")
