@@ -49,7 +49,6 @@ async function validateApiKey(rawKey: string): Promise<CachedKeyData | null>{
    if(!isValid) return null;
 
    if(keyRecord.expires_at && new Date(keyRecord.expires_at) < new Date()){
-
     await admin
         .from('api_keys')
         .update({status: 'revoked'})
@@ -112,13 +111,12 @@ async function checkRateLimit(keyId: string): Promise<{allowed:boolean; remainin
     console.warn('Rate limit check failed, failing open');
     return { allowed: true, remaining: -1, resetAt: 0 };
   }
-
 }
 
 export async function withApiKeyAuth(
   req: Request,
   requiredScope?: string
-): Promise< AuthSuccess | Response> {
+): Promise<AuthSuccess | Response> {
 
   const startTime = Date.now();
 
@@ -147,37 +145,35 @@ export async function withApiKeyAuth(
     );
   }
 
-  const{allowed, remaining, resetAt} = await checkRateLimit(keyData.id);
+  const { allowed, remaining, resetAt } = await checkRateLimit(keyData.id);
 
   if(!allowed){
     return new Response(
-      JSON.stringify({error:'Rate limit exceeded. Try again shortly.'}),
+      JSON.stringify({ error: 'Rate limit exceeded. Try again shortly.' }),
       {
         status: 429,
         headers: {
           'Content-Type': 'application/json',
           'X-RateLimit-Limit': '100',
           'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': String(resetAt),
-          'Retry-After': String(resetAt - Math.floor(Date.now() / 1000)),
+          'X-RateLimit-Reset': resetAt.toString(),
+          'Retry-After': Math.max(0, resetAt - Math.floor(Date.now() / 1000)).toString(),
         },
       }
-
-    )
+    );
   }
 
-  const track = (statusCode: number, endpoint?: string)=>{
+  const track = (statusCode: number, endpoint?: string) => {
     trackUsageAsync({
-      api_key_id:keyData.id,
+      api_key_id: keyData.id,
       project_id: keyData.project_id,
       organization_id: keyData.organization_id,
       environment: keyData.environment,
       status_code: statusCode,
-      response_time_ms: Date.now() - startTime,
+      response_time_ms: (Date.now() - startTime).toString(),
       endpoint: endpoint ?? new URL(req.url).pathname,
-    })
-  }
+    });
+  };
 
-
-  return { keyData,remaining,resetAt,track };
+  return { keyData, remaining, resetAt, track };
 }
