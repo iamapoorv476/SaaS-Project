@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, BarChart, Bar, Legend
+  Tooltip, ResponsiveContainer, BarChart, Bar
 } from "recharts";
 
 type DailyPoint = { date: string; total: number; errors: number };
@@ -16,17 +16,39 @@ export function UsageCharts({ projectId }: { projectId: string }) {
   const [dailyChart, setDailyChart] = useState<DailyPoint[]>([]);
   const [byEnvironment, setByEnvironment] = useState<Record<string, number>>({});
 
+
   useEffect(() => {
+  let cancelled = false;
+
+  async function loadData() {
     setLoading(true);
-    fetch(`/api/projects/${projectId}/usage?range=${range}`)
-      .then((r) => r.json())
-      .then((data) => {
+    try {
+      const r = await fetch(`/api/projects/${projectId}/usage?range=${range}`);
+      const data = await r.json();
+      if (!cancelled) {
         setSummary(data.summary);
         setDailyChart(data.dailyChart);
         setByEnvironment(data.byEnvironment);
-      })
-      .finally(() => setLoading(false));
-  }, [projectId, range]);
+      }
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  }
+
+  loadData();
+  return () => { cancelled = true; };
+}, [projectId, range]);
+  // useEffect(() => {
+  //   setLoading(true);
+  //   fetch(`/api/projects/${projectId}/usage?range=${range}`)
+  //     .then((r) => r.json())
+  //     .then((data) => {
+  //       setSummary(data.summary);
+  //       setDailyChart(data.dailyChart);
+  //       setByEnvironment(data.byEnvironment);
+  //     })
+  //     .finally(() => setLoading(false));
+  // }, [projectId, range]);
 
   const envData = Object.entries(byEnvironment).map(([env, count]) => ({
     env,

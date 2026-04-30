@@ -43,7 +43,7 @@ export default function CreateProjectPage() {
       router.push(`/dashboard/${orgId}/projects/${data.project.id}`);
       router.refresh();
 
-    } catch (err) {
+    } catch  {
       setError("Something went wrong");
     } finally {
       setLoading(false);

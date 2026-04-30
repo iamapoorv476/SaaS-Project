@@ -10,7 +10,7 @@ type UsageEvent={
     endpoint?: string;
 }
 
-export async function trackUsageAsync(params: any) {
+export async function trackUsageAsync(params: UsageEvent) {
   try {
     const admin = await getSupabaseAdmin();
     await admin.from('usage_events').insert({...params});

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { plan, status } = await getOrgPlan(organizationId);
+    const { plan } = await getOrgPlan(organizationId);
     const resolvedPlan = Array.isArray(plan) ? plan[0] : plan;
     
     // if (status !== "active") {

@@ -49,7 +49,7 @@ export default  function CreateOrgPage(){
             router.refresh();
 
         }
-        catch (err: any){
+        catch {
             setError("Something went wrong");
         }
         finally{

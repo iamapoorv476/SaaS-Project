@@ -3,6 +3,15 @@ import { ArrowUpRight, ArrowDownRight, MoreHorizontal, CheckCircle2, Clock, Aler
 import Link from 'next/link';
 import { getSupabaseClient } from '../lib/billing/supabase/server';
 import { getSupabaseAdmin } from '../lib/billing/supabase/server';
+
+type OrgMembership = {
+  organization_id: string;
+  organizations: {
+    id: string;
+    name: string;
+    slug: string;
+  }[] | null;
+};
 export default async function DashboardPage() {
     const supabase = await getSupabaseClient();
 
@@ -44,9 +53,9 @@ export default async function DashboardPage() {
   }
    
   const orgs =
-    orgMemberships
-      ?.map((m: any) => m.organizations)
-      .filter(Boolean) ?? [];
+   (orgMemberships as OrgMembership[])
+    ?.map((m) => m.organizations?.[0])
+    .filter(Boolean) ?? [];
   if (orgs.length === 0) {
     return <NoOrganizationState />;
   }

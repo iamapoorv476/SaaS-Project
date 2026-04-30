@@ -159,7 +159,7 @@ if (!envPrefix) {
       return NextResponse.json({ keys: keys ?? [] });
 
     }
-    catch (err) {
+    catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
   }

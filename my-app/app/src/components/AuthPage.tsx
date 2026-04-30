@@ -15,7 +15,7 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect");
-  const supabase = createClient();
+  //const supabase = createClient();
 //   console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 // console.log("Supabase Key exists:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 // console.log("Supabase client:", supabase);

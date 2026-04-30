@@ -2,6 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 
+type Organization = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 export default async function  OrgDashboardPage ({
     params,
 
@@ -34,7 +40,7 @@ export default async function  OrgDashboardPage ({
       <div className="max-w-3xl mx-auto mt-20 p-10 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
         <h1 className="text-2xl font-bold text-white">Access denied</h1>
         <p className="text-slate-400 mt-2">
-          You don’t have permission to access this organization.
+          You don&apos;t have permission to access this organization.
         </p>
         {membershipError && (
           <p className="text-rose-400 text-sm mt-2">
@@ -51,7 +57,8 @@ export default async function  OrgDashboardPage ({
     );
   }
 
-  const org = membership.organizations as any;
+  const rawOrg = membership.organizations;
+  const org = (Array.isArray(rawOrg) ? rawOrg[0] : rawOrg) as Organization;
   const role = membership.role
 
   return(

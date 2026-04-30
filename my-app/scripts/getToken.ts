@@ -6,7 +6,7 @@ const client = createClient(
 );
 
 async function run() {
-  const { data, error } = await client.auth.signInWithPassword({
+  const { data } = await client.auth.signInWithPassword({
     email: "newmember@example.com",
     password: "1234",
   });

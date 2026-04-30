@@ -1,6 +1,11 @@
 import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 import { NextResponse } from "next/server";
 
+type SubscriptionPlan = {
+  monthly_token_limit: number;
+  name: string;
+}
+
 export async function GET(req: Request){
     try{
         const {searchParams} = new URL(req.url);
@@ -49,8 +54,14 @@ export async function GET(req: Request){
       .eq('organization_id', organizationId)
       .single();
 
-    const planLimit = (subscription?.subscription_plans as any)?.monthly_token_limit ?? 100000;
-    const planName = (subscription?.subscription_plans as any)?.name ?? 'Free';
+    const plans = subscription?.subscription_plans as SubscriptionPlan | SubscriptionPlan[] | null;
+    const plan = Array.isArray(plans) ? plans[0] : plans;
+
+    const planLimit = plan?.monthly_token_limit ?? 100000;
+    const planName = plan?.name ?? 'Free';
+
+    // const planLimit = (subscription?.subscription_plans as any)?.monthly_token_limit ?? 100000;
+    // const planName = (subscription?.subscription_plans as any)?.name ?? 'Free';
 
     const totalInput = usageRows?.reduce((s, r) => s + (r.input_tokens ?? 0), 0) ?? 0;
     const totalOutput = usageRows?.reduce((s , r) => s + (r.output_tokens ?? 0) , 0) ?? 0;

@@ -39,7 +39,7 @@ export default function AcceptInvitePage() {
             router.push(`/dashboard/${data.organization.id}`);
             router.refresh();
         }
-        catch(err: any){
+        catch{
             setError("Something went wrong");
         }
         finally{

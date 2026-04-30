@@ -41,7 +41,7 @@ export default async function ProjectDashboardPage({
       <div className="max-w-3xl mx-auto mt-20 p-10 rounded-2xl border border-white/10 bg-white/5">
         <h1 className="text-2xl font-bold text-white">Project not found</h1>
         <p className="text-slate-400 mt-2">
-          This project may have been deleted or you don't have access.
+          This project may have been deleted or you don&apos;t have access.
         </p>
         <Link
           href={`/dashboard/${orgId}/projects`}

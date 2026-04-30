@@ -1,7 +1,7 @@
 'use client';
 import ReactMarkdown from 'react-markdown';
 // import { Message } from "@anthropic-ai/sdk/resources";
-import { useEffect,useRef,useState } from "react";
+import { useCallback, useEffect,useRef,useState } from "react";
 
 type Messages = {
     id: string;
@@ -19,8 +19,8 @@ type Document = {
 
 function DocumentPanel({
     apiKey,
-    projectId,
-    organizationId,
+    projectId: _projectId,
+    organizationId: _organizationId,
 }: {
     apiKey: string;
     projectId: string;
@@ -33,25 +33,38 @@ function DocumentPanel({
     const [error, setError] = useState('');
     const [success, setSuccess]= useState('');
 
-    useEffect(() =>{
-        fetchDocs();
-    }, []);
 
-
-
-async function fetchDocs(){
-    try{
-        const res = await fetch('/api/v1/documents',{
-            headers: {Authorization: `Bearer ${apiKey}`},
+    const fetchDocs = useCallback(async() => {
+      try{
+        const res = await fetch('/api/v1/documents', {
+          headers: {Authorization: `Bearer ${apiKey}`},
         });
         const data = await res.json();
-        setDocs(data.documents ?? [])
-    } catch{
+        setDocs(data.documents ?? []);
+      } catch{
 
-    }
-}
-async function handleUpload(){
-    if(!name.trim || !content.trim){
+      }
+    }, [apiKey])
+
+    useEffect(() =>{
+        fetchDocs();
+    }, [fetchDocs]);
+
+
+
+// async function fetchDocs(){
+//     try{
+//         const res = await fetch('/api/v1/documents',{
+//             headers: {Authorization: `Bearer ${apiKey}`},
+//         });
+//         const data = await res.json();
+//         setDocs(data.documents ?? [])
+//     } catch{
+
+//     }
+// }
+const handleUpload = useCallback(async () => {
+    if (!name.trim() || !content.trim()) {
         setError('Both name and content are required');
         return;
     }
@@ -59,19 +72,18 @@ async function handleUpload(){
     setSuccess('');
     setUploading(true);
 
-    try{
+    try {
         const res = await fetch('/api/v1/documents', {
-            method:'POST',
-            headers:{
+            method: 'POST',
+            headers: {
                 Authorization: `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({name, content}),
-
+            body: JSON.stringify({ name, content }),
         });
         const data = await res.json();
 
-        if(!res.ok){
+        if (!res.ok) {
             setError(data.error ?? 'Upload failed');
         } else {
             setSuccess(`✓ "${name}" ingested with ${data.chunks_created} chunks`);
@@ -84,7 +96,7 @@ async function handleUpload(){
     } finally {
         setUploading(false);
     }
-}
+}, [apiKey, name, content, fetchDocs]);
 
 return (
     <div className="flex flex-col gap-4 -full">
@@ -213,7 +225,7 @@ function ChatPanel({apiKey}: {apiKey: string}){
             id:'Welcome',
             role:'assistant',
             content:
-              'Hi! I\'m ready to answer questions based on your uploaded documents. Upload a document on the left, then ask me anything about it.',
+              `Hi! I'm ready to answer questions based on your uploaded documents. Upload a document on the left, then ask me anything about it.`,
         }
     ])
     const [input, setInput] = useState('');

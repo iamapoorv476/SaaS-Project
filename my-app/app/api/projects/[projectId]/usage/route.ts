@@ -1,6 +1,5 @@
 import { getSupabaseClient, getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 import { NextResponse } from "next/server";
-import { parse } from "path";
 
 export async function GET(
     req:Request,

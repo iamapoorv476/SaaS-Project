@@ -93,7 +93,7 @@ export default function NewApiKeyPage() {
             <div>
               <h1 className="text-white font-bold text-xl">API Key Created</h1>
               <p className="text-slate-400 text-sm">
-                Save this key — it won't be shown again.
+                Save this key — it won&apos;t be shown again.
               </p>
             </div>
           </div>

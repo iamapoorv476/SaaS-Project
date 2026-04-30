@@ -50,11 +50,13 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
 
   console.log(" customerId:", customerId);
 
-  let { data: org, error: orgError } = await supabase
+  let { data: orgData, error: orgError } = await supabase
     .from("organizations")
     .select("id")
     .eq("stripe_customer_id", customerId)
     .single();
+
+  let org = orgData;
 
   console.log(" org by customerId:", org);
   console.log(" org lookup error:", orgError);

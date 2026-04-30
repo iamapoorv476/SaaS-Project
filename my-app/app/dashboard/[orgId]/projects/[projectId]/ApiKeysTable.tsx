@@ -15,7 +15,7 @@ type ApiKey = {
 export function ApiKeysTable({
   apiKeys,
   projectId,
-  orgId,
+  orgId: _orgId,
   isAdmin,
 }: {
   apiKeys: ApiKey[];
