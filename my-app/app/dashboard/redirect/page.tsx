@@ -18,7 +18,7 @@ export default async function DashboardRedirectPage() {
     .limit(1)
     .single();
 
-  if (!membership) redirect("/onboarding");
+  if (!membership) redirect("/onboarding/create-org");
 
   // Get first active project in that org
   const { data: project } = await admin
