@@ -50,18 +50,15 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
 
   console.log(" customerId:", customerId);
 
-  let { data: orgData, error: orgError } = await supabase
+  const { data: orgData } = await supabase
     .from("organizations")
     .select("id")
     .eq("stripe_customer_id", customerId)
     .single();
 
-  let org = orgData;
+  let orgId: string | null = orgData?.id ?? null;
 
-  console.log(" org by customerId:", org);
-  console.log(" org lookup error:", orgError);
-
-  if (!org) {
+  if (!orgId) {
     console.log(" org not found by customerId, checking Stripe metadata...");
 
     const customer = await stripe.customers.retrieve(customerId);
@@ -87,10 +84,10 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
 
     console.log(" stripe_customer_id update error:", updateError);
 
-    org = { id: organizationId };
+    orgId = organizationId;
   }
 
-  if (!org) {
+  if (!orgId) {
     console.log(" org still not resolved");
     return;
   }
@@ -105,23 +102,23 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
     console.log(" No planId found — aborting");
     return;
   }
+
   const item = subscription.items.data[0];
 
-if (!item?.current_period_start || !item?.current_period_end) {
-  console.log(" Missing period timestamps from Stripe");
-  return;
-}
-
+  if (!item?.current_period_start || !item?.current_period_end) {
+    console.log(" Missing period timestamps from Stripe");
+    return;
+  }
 
   const { data, error } = await supabase
     .from("subscriptions")
     .upsert({
-      organization_id: org.id,
+      organization_id: orgId,
       plan_id: planId,
       stripe_subscription_id: subscription.id,
       status: subscription.status,
       current_period_start: new Date(item.current_period_start * 1000),
-  current_period_end: new Date(item.current_period_end * 1000),
+      current_period_end: new Date(item.current_period_end * 1000),
       cancel_at_period_end: subscription.cancel_at_period_end,
     })
     .select();
@@ -129,7 +126,6 @@ if (!item?.current_period_start || !item?.current_period_end) {
   console.log(" Upsert data:", data);
   console.log(" Upsert error:", error);
 }
-
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   await supabase
     .from("subscriptions")

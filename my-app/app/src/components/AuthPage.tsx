@@ -54,13 +54,21 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
 
         if (error) {
           setError(error.message);
-        } else {
-          setMessage("Account created! Please check your email to verify.");
-          
-          setTimeout(() => {
-            router.push(redirectTo ? `/signin?redirect=${redirectTo}` : "/signin");
-          }, 2000);
-        }
+        }else {
+  // Auto sign in immediately after signup
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (signInError) {
+    setError(signInError.message);
+  } else {
+    router.push(redirectTo || "/dashboard/redirect");
+    router.refresh();
+  }
+}
+
       }
     } catch (err) {
       console.error("Auth error:", err);
