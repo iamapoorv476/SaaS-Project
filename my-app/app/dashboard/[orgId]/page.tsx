@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
+import { getOrgPlan } from "@/app/lib/billing/getOrgPlan";
+import { getSupabaseClient, getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 
 type Organization = {
   id: string;
@@ -8,34 +9,34 @@ type Organization = {
   slug: string;
 };
 
-export default async function  OrgDashboardPage ({
-    params,
-
-}:{
-    params:Promise <{orgId: string}>;
+export default async function OrgDashboardPage({
+  params,
+}: {
+  params: Promise<{ orgId: string }>;
 }) {
-    const {orgId} = await params;
+  const { orgId } = await params;
 
-    const supabase = await getSupabaseClient();
-    const {
-        data: {user},
-    } = await supabase.auth.getUser();
+  const supabase = await getSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if(!user){
-        redirect("/auth/login");
-    }
-    const admin = await getSupabaseAdmin();
+  if (!user) redirect("/auth/login");
 
-    const {data: membership, error: membershipError}=  await admin
-           .from("members")
-           .select("role, organizations(id, name, slug)")
-           .eq("organization_id",orgId)
-           .eq("user_id",user.id)
-           .single();
-    
-    console.log("Membership query result:", { membership, membershipError });
+  const admin = await getSupabaseAdmin();
 
-    if (membershipError || !membership?.organizations) {
+  const [{ data: membership, error: membershipError }, orgPlan] =
+    await Promise.all([
+      admin
+        .from("members")
+        .select("role, organizations(id, name, slug)")
+        .eq("organization_id", orgId)
+        .eq("user_id", user.id)
+        .single(),
+      getOrgPlan(orgId),
+    ]);
+
+  if (membershipError || !membership?.organizations) {
     return (
       <div className="max-w-3xl mx-auto mt-20 p-10 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
         <h1 className="text-2xl font-bold text-white">Access denied</h1>
@@ -59,71 +60,114 @@ export default async function  OrgDashboardPage ({
 
   const rawOrg = membership.organizations;
   const org = (Array.isArray(rawOrg) ? rawOrg[0] : rawOrg) as Organization;
-  const role = membership.role
+  const role = membership.role;
+  const { plan, isPro, status } = orgPlan;
 
-  return(
+  return (
     <div className="space-y-6 max-w-7xl mx-auto p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-                <p className="text-slate-500 text-sm">Workspace</p>
-                <h1 className="text-3xl font-bold text-white tracking-tight">
-                    {org.name}
-                </h1>
-                <p className="text-slate-400 text-sm mt-1">
-                    Role: <span className="text-slate-200">{role}</span>
-                </p>
-            </div>
-
-            <div className="flex gap-3">
-                <Link
-                   href={`/dashboard/${orgId}/members`}
-                   className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition border border-white/10"
-                >
-                    Invite Members
-                </Link>
-
-                <Link 
-                   href={`/dashboard/${orgId}/projects/new`}
-                   className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-blue-600/20"
-                >
-                    New Project
-                   </Link>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-slate-500 text-sm">Workspace</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            {org.name}
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Role: <span className="text-slate-200">{role}</span>
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex gap-3">
+          <Link
+            href={`/dashboard/${orgId}/members`}
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition border border-white/10"
+          >
+            Invite Members
+          </Link>
+          <Link
+            href={`/dashboard/${orgId}/projects/new`}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-blue-600/20"
+          >
+            New Project
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard title="Projects" value="--" subtext="coming soon" />
         <StatCard title="Members" value="--" subtext="coming soon" />
-        <StatCard title="Plan" value="--" subtext="coming soon" />
-       </div>
 
-       <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+        {/* ✅ Now shows real plan data */}
+        <StatCard
+          title="Plan"
+          value={isPro ? (plan.name ?? "Pro") : "Free"}
+          subtext={
+            isPro
+              ? status === "trialing"
+                ? "Trial active"
+                : "Active subscription"
+              : "Upgrade for more"
+          }
+          highlight={isPro}
+        />
+      </div>
+
+      {/* Upgrade banner — only shown on free plan */}
+      {!isPro && (
+        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-white font-medium">You&apos;re on the Free plan</p>
+            <p className="text-slate-400 text-sm mt-0.5">
+              Upgrade to Pro for unlimited projects, more members, and priority support.
+            </p>
+          </div>
+          <Link
+            href={`/billing/upgrade`}
+            className="shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-blue-600/20"
+          >
+            Upgrade to Pro
+          </Link>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
         <h2 className="text-white font-semibold">Next steps</h2>
         <ul className="mt-3 space-y-2 text-slate-400 text-sm list-disc pl-5">
           <li>Create your first project</li>
           <li>Invite team members</li>
-          <li>Upgrade plan if you hit limits</li>
+          {!isPro && <li>Upgrade plan if you hit limits</li>}
         </ul>
       </div>
-    
     </div>
-  )
+  );
 }
 
 function StatCard({
-    title,
-    value,
-    subtext,
-}:{
-    title: string;
-    value: string;
-    subtext: string;
-}
-){
+  title,
+  value,
+  subtext,
+  highlight = false,
+}: {
+  title: string;
+  value: string;
+  subtext: string;
+  highlight?: boolean;
+}) {
   return (
-    <div className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+    <div
+      className={`p-6 rounded-2xl border backdrop-blur-sm transition-all ${
+        highlight
+          ? "border-blue-500/30 bg-blue-500/5"
+          : "border-white/10 bg-white/5"
+      }`}
+    >
       <p className="text-slate-400 text-sm">{title}</p>
-      <p className="text-3xl font-bold text-white mt-2">{value}</p>
+      <p
+        className={`text-3xl font-bold mt-2 ${
+          highlight ? "text-blue-400" : "text-white"
+        }`}
+      >
+        {value}
+      </p>
       {subtext && <p className="text-xs text-slate-500 mt-1">{subtext}</p>}
     </div>
   );

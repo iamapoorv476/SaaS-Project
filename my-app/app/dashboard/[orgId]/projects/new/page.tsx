@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+
+type PlanInfo = {
+  plan: string;
+  isPro: boolean;
+  maxProjects: number;
+};
 
 export default function CreateProjectPage() {
   const router = useRouter();
@@ -12,6 +19,27 @@ export default function CreateProjectPage() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [planInfo, setPlanInfo] = useState<PlanInfo>({
+    plan: "free",
+    isPro: false,
+    maxProjects: 3,
+  });
+
+  // Fetch real plan on mount
+  useEffect(() => {
+    if (!orgId) return;
+    fetch(`/api/billing/status?organizationId=${orgId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const isPro = data.status === "active" || data.status === "trialing";
+        setPlanInfo({
+          plan: data.plan ?? "free",
+          isPro,
+          maxProjects: isPro ? Infinity : 3,
+        });
+      })
+      .catch(() => {}); // silently keep defaults
+  }, [orgId]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,10 +55,11 @@ export default function CreateProjectPage() {
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: name.trim(),
-          description, 
-          organizationId: orgId }),
+          description,
+          organizationId: orgId,
+        }),
       });
 
       const data = await res.json();
@@ -42,8 +71,7 @@ export default function CreateProjectPage() {
 
       router.push(`/dashboard/${orgId}/projects/${data.project.id}`);
       router.refresh();
-
-    } catch  {
+    } catch {
       setError("Something went wrong");
     } finally {
       setLoading(false);
@@ -76,7 +104,8 @@ export default function CreateProjectPage() {
 
           <div>
             <label className="block text-sm text-slate-300 mb-1">
-              Description <span className="text-slate-500">(optional)</span>
+              Description{" "}
+              <span className="text-slate-500">(optional)</span>
             </label>
             <textarea
               value={description}
@@ -102,9 +131,24 @@ export default function CreateProjectPage() {
           </button>
         </form>
 
-        <p className="text-xs text-slate-500 mt-4 text-center">
-          Free plan: up to 3 projects per organization.
-        </p>
+        {/* ✅ Dynamic plan info — no longer hardcoded */}
+        <div className="mt-4 text-center">
+          {planInfo.isPro ? (
+            <p className="text-xs text-emerald-400">
+              ✓ Pro plan: unlimited projects
+            </p>
+          ) : (
+            <p className="text-xs text-slate-500">
+              Free plan: up to {planInfo.maxProjects} projects.{" "}
+              <Link
+                href={`/billing/upgrade`}
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                Upgrade to Pro
+              </Link>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

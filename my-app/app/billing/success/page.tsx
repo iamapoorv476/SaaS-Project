@@ -1,18 +1,24 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSupabaseClient, getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
+import { BillingSuccessClient } from "./BillingSuccessClient";
 
-export default function BillingSuccessPage(){
-    return(
-        <div className="min-h-screen flex items-center justify-center bg-slate-950">
-            <div className="text-center space-y-4">
-                <div className="w-16 h-16 rounded -full bg-emerald-500/10 flex items-center justify-center mx-auto">
-                    <span className="text-emerald-400 text-3xl">✓</span>
-                </div>
-                <h1 className="text-2xl font-bold text-white ">You&apos;re on Pro!</h1>
-                <p className="text-slate-400">Your subscription is now active.</p>
-                <Link href="/dashboard" className="inline-block mt-4 px-6 py-2.5 bg-blue-600 hover: bg-blue-500 text-white rounded-lg text-sm font-medium transition">
-                  Go to Dashboard
-                </Link>
-            </div>
-        </div>
-    )
+export default async function BillingSuccessPage() {
+  const supabase = await getSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/signin?redirect=/billing/success");
+
+  const admin = await getSupabaseAdmin();
+
+  const { data: membership } = await admin
+    .from("members")
+    .select("organization_id")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .single();
+
+  if (!membership) redirect("/dashboard");
+
+  return <BillingSuccessClient organizationId={membership.organization_id} />;
 }
