@@ -91,7 +91,7 @@ export async function trackTokenUsage(params: {
       project_id: params.projectId,
       input_tokens: params.inputTokens,
       output_tokens: params.outputTokens,
-      total_tokens: totalTokens,
+      //total_tokens: totalTokens,
       model: params.model,
       endpoint: params.endpoint,
       created_at: new Date().toISOString(),
