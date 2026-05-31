@@ -103,21 +103,12 @@ If the answer is not in the context, say so."""
 
 
 def run_evaluation(project_id: str, questions: list[str]) -> dict:
-    """
-    Runs RAGAS evaluation on a set of questions against project documents.
-    Returns scores for faithfulness, answer_relevancy, context_precision.
-    """
-    # Build dataset
     raw_data = build_test_dataset(project_id, questions)
     dataset = Dataset.from_dict(raw_data)
 
     llm = get_llm()
     embeddings = get_embeddings()
 
-    # Run RAGAS evaluation
-    # faithfulness     — is the answer grounded in the context?
-    # answer_relevancy — does the answer address the question?
-    # context_precision — are retrieved chunks actually relevant?
     results = evaluate(
         dataset=dataset,
         metrics=[
@@ -127,10 +118,8 @@ def run_evaluation(project_id: str, questions: list[str]) -> dict:
         ],
         llm=llm,
         embeddings=embeddings,
-        raise_on_failure=False,
     )
 
-    # Convert to plain dict with rounded scores
     scores = results.to_pandas().mean(numeric_only=True).to_dict()
 
     return {
