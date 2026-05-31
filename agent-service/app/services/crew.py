@@ -1,9 +1,11 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.tools import BaseTool
-from langchain_anthropic import ChatAnthropic
+
 from app.services.supabase import search_documents, supabase
 from app.config import config
 from pydantic import BaseModel, Field
+import os
+os.environ["ANTHROPIC_API_KEY"] = config.ANTHROPIC_API_KEY
 
 class DocumentSearchTool(BaseTool):
     name: str ="search_documents"
@@ -64,11 +66,7 @@ def create_analysis_crew(project_id: str, topic: str) -> Crew:
     Each agent's output becomes context for the next.
     """
 
-    llm = ChatAnthropic(
-        model="claude-haiku-4-5-20251001",
-        api_key=config.ANTHROPIC_API_KEY,
-        temperature=0.1
-    )
+    llm = "claude-haiku-4-5-20251001"
 
 
     search_tool = DocumentSearchTool(project_id=project_id)
@@ -178,9 +176,6 @@ def create_analysis_crew(project_id: str, topic: str) -> Crew:
 
 
 def run_analysis(project_id: str, topic: str) -> dict:
-    """
-    Runs the multi-agent crew and returns structured result.
-    """
     crew = create_analysis_crew(project_id, topic)
     result = crew.kickoff()
 
@@ -188,6 +183,6 @@ def run_analysis(project_id: str, topic: str) -> dict:
         "topic": topic,
         "project_id": project_id,
         "report": str(result),
-        "agent_used":["Document Researcher", "Data Analyst", "Report Writer"],
+        "agents_used": ["Document Researcher", "Data Analyst", "Report Writer"],
         "process": "sequential"
     }
