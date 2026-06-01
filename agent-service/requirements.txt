@@ -131,7 +131,6 @@ pysbd==0.3.4
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-multipart==0.0.29
-pywin32==311
 PyYAML==6.0.3
 ragas==0.2.6
 realtime==2.30.1
