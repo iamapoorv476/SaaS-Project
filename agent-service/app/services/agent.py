@@ -94,20 +94,12 @@ def summarize_all_documents(project_id: str) -> str:
 
 
 def create_agent(project_id: str):
-    """
-    Creates a ReAct agent with access to project-specific tools.
-    ReAct = Reasoning + Acting — agent thinks about which tool to use,
-    uses it, observes the result, then decides next step.
-    """
     model = ChatAnthropic(
         model="claude-haiku-4-5-20251001",
         api_key=config.ANTHROPIC_API_KEY,
         temperature=0
     )
 
-    # Bind project_id into tools so agent doesn't need to figure it out
-    # We create lambda wrappers that inject project_id automatically
-    
     tools = [
         search_project_documents,
         get_project_info,
@@ -130,10 +122,12 @@ Think step by step:
 
 If documents don't contain relevant information, say so clearly."""
 
+    from langchain_core.messages import SystemMessage
+
     agent = create_react_agent(
         model=model,
         tools=tools,
-        prompt=system_prompt,
+        messages_modifier=SystemMessage(content=system_prompt),
     )
 
     return agent
