@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ApiKeysTable } from "./ApiKeysTable";
 import { TokenUsageCard } from "@/app/components/dashboard/TokenUsageCard";
+import { DocumentAnalysisCard } from "@/app/components/dashboard/DocumentAnalysisCard";
 import { RagEvaluationCard } from "@/app/components/dashboard/RagEvaluationCard";
 import { getSupabaseClient,getSupabaseAdmin } from "@/app/lib/billing/supabase/server";
 import { UsageCharts } from "./UsageCharts";
@@ -141,6 +142,7 @@ export default async function ProjectDashboardPage({
         organizationId={orgId} 
       />
       <RagEvaluationCard projectId={projectId} />
+      <DocumentAnalysisCard projectId={projectId} />
 
       <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
