@@ -104,7 +104,7 @@ export function RagEvaluationCard({ projectId }: { projectId: string }) {
 
     try {
       const res = await fetch(
-        `${process.env.AGENT_SERVICE_URL}/api/v1/evaluate`,
+        `${process.env.NEXT_PUBLIC_AGENT_SERVICE_URL}/api/v1/evaluate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
