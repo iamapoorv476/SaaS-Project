@@ -9,7 +9,11 @@ app = FastAPI(title="ProjectFlow Agent Service")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[""
+    "http://localhost:3000",
+    "https://saa-s-project-k7ku.vercel.app",
+      "*"             
+                   ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
