@@ -1,93 +1,46 @@
-export function Footer(){
-    return(
-         <footer className="border-t border-slate-800 bg-slate-950">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-4 mb-12">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <span className="text-sm font-bold text-white">P</span>
-              </div>
-              <span className="text-lg font-semibold text-white">ProjectFlow</span>
+export function Footer() {
+  return (
+    <footer className="border-t border-white/5 bg-slate-950">
+      <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+              <span className="text-sm font-bold text-white">P</span>
             </div>
-            <p className="text-slate-400 text-sm">Build better, ship faster.</p>
+            <span className="text-base font-semibold text-white">ProjectFlow</span>
+            <span className="text-slate-600 text-sm ml-2">— Multi-tenant AI platform</span>
           </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Security
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Careers
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Privacy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Terms
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-slate-800 pt-8 flex items-center justify-between">
-          <p className="text-slate-400 text-sm">© 2025 ProjectFlow. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" className="text-slate-400 hover:text-white transition-colors">
-              Twitter
-            </a>
-            <a href="#" className="text-slate-400 hover:text-white transition-colors">
+
+          <div className="flex items-center gap-6 text-sm text-slate-500">
+            <a
+              href="https://github.com/iamapoorv476/SaaS-Project"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
               GitHub
             </a>
-            <a href="#" className="text-slate-400 hover:text-white transition-colors">
+            <a
+              href="https://linkedin.com/in/apoorva-pratap-singh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
               LinkedIn
             </a>
+            <a
+              href="mailto:apoorvapratapsingh6@gmail.com"
+              className="hover:text-white transition-colors"
+            >
+              Contact
+            </a>
           </div>
+
+          <p className="text-slate-600 text-sm">
+            Built by Apoorva Pratap Singh · MIT License
+          </p>
         </div>
       </div>
     </footer>
-    )
+  )
 }

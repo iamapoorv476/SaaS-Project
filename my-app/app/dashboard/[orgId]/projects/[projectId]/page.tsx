@@ -123,20 +123,29 @@ export default async function ProjectDashboardPage({
         </div>
         
 
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard
-          title="API Keys"
-          value={String(apiKeys?.length ?? 0)}
-          subtext="active keys"
-        />
-        <StatCard
-          title="Environments"
-          value="3"
-          subtext="dev · staging · prod"
-        />
-        
-        <UsageCharts projectId={projectId} />
-      </div>
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <StatCard
+    title="API Keys"
+    value={String(apiKeys?.length ?? 0)}
+    subtext="active keys"
+  />
+  <StatCard
+    title="Environments"
+    value="3"
+    subtext="dev · staging · prod"
+  />
+  <StatCard
+    title="Plan"
+    value="Free"
+    subtext="100K tokens/month"
+  />
+  <StatCard
+    title="Status"
+    value="Live"
+    subtext="production ready"
+  />
+</div>
+<UsageCharts projectId={projectId} />
       <TokenUsageCard 
         projectId={projectId} 
         organizationId={orgId} 
@@ -220,10 +229,10 @@ function StatCard({
   title: string; value: string; subtext: string;
 }) {
   return (
-    <div className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
-      <p className="text-slate-400 text-sm">{title}</p>
-      <p className="text-3xl font-bold text-white mt-2">{value}</p>
-      {subtext && <p className="text-xs text-slate-500 mt-1">{subtext}</p>}
+    <div className="p-5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+      <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{title}</p>
+      <p className="text-2xl font-bold text-white mt-2 mb-1">{value}</p>
+      {subtext && <p className="text-xs text-slate-500">{subtext}</p>}
     </div>
   );
 }

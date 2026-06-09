@@ -1,17 +1,19 @@
 import { Header } from "./src/components/header"
 import { Hero } from "./src/components/hero"
+import { DashboardPreview } from "./src/components/dashboard-preview"
 import { Features } from "./src/components/features"
-import { Pricing } from "./src/components/pricing"
+import { TechStack } from "./src/components/tech-stack"
 import { FinalCTA } from "./src/components/final-cta"
 import { Footer } from "./src/components/footer"
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900">
+    <main className="min-h-screen bg-slate-950">
       <Header />
       <Hero />
+      <DashboardPreview />
       <Features />
-      <Pricing />
+      <TechStack />
       <FinalCTA />
       <Footer />
     </main>

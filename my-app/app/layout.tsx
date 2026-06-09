@@ -15,24 +15,19 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "ProjectFlow - Build Better, Ship Faster",
-  description: "Streamline your project management workflow with real-time collaboration and analytics.",
-  icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
+  title: "ProjectFlow — Multi-Tenant AI Platform",
+  description: "Organizations upload documents, generate scoped API keys, and chat with an AI that answers strictly from their own content. Powered by LangGraph, CrewAI, and RAGAS.",
+  openGraph: {
+    title: "ProjectFlow — Multi-Tenant AI Platform",
+    description: "RAG pipeline, LangGraph ReAct agents, CrewAI multi-agent analysis, and RAGAS quality evaluation. Live in production.",
+    url: "https://saa-s-project-k7ku.vercel.app",
+    siteName: "ProjectFlow",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ProjectFlow — Multi-Tenant AI Platform",
+    description: "RAG pipeline, LangGraph ReAct agents, CrewAI multi-agent analysis, and RAGAS quality evaluation.",
   },
 }
 
