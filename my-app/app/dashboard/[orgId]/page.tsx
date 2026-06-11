@@ -112,7 +112,7 @@ export default async function OrgDashboardPage({
       </div>
 
       {/* Upgrade banner — only shown on free plan */}
-      {!isPro && (
+      {/* {!isPro && (
         <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-white font-medium">You&apos;re on the Free plan</p>
@@ -127,7 +127,7 @@ export default async function OrgDashboardPage({
             Upgrade to Pro
           </Link>
         </div>
-      )}
+      )} */}
 
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
         <h2 className="text-white font-semibold">Next steps</h2>

@@ -145,7 +145,7 @@ export default async function ProjectDashboardPage({
     subtext="production ready"
   />
 </div>
-<UsageCharts projectId={projectId} />
+{/* <UsageCharts projectId={projectId} /> */}
       <TokenUsageCard 
         projectId={projectId} 
         organizationId={orgId} 

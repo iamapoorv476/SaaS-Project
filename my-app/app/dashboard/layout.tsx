@@ -21,9 +21,9 @@ export default function DashboardLayout({children}: DashboardLayoutProps){
                 </div>
 
                 <nav className="flex-1 px-4 py-6 space-y-2">
-                    <NavItem href="/dashboard" icon={<Home size ={20}/> }label ="Dashboard"/>
-                    <NavItem href ="/dashboard/projects" icon={<Folder size={20}/>} label ="Projects"/>
-                    <NavItem href="/dashboard/settings" icon={<Settings size={20} />} label="Settings" />
+                    <NavItem href="/" icon={<Home size ={20}/> }label ="Dashboard"/>
+                    {/* <NavItem href ="/dashboard/projects" icon={<Folder size={20}/>} label ="Projects"/> */}
+                    {/* <NavItem href="/dashboard/settings" icon={<Settings size={20} />} label="Settings" /> */}
                 </nav>
 
                 <div className="p-4 border-t border-white/5">
@@ -33,7 +33,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps){
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">Demo User</p>
-              <p className="text-xs text-slate-500 truncate">user@example.com</p>
+              <p className="text-xs text-slate-500 truncate">demo@projectflow.ai</p>
             </div>
             <LogOut size={16} className="text-slate-500 hover:text-white transition" />
           </div>

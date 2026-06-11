@@ -79,7 +79,7 @@ function ScoreBar({
 
 export function RagEvaluationCard({ projectId }: { projectId: string }) {
   const [questions, setQuestions] = useState(
-    "What is this project about?\nWhat features does this platform provide?"
+    "What is this project about?"
   );
   const [result, setResult] = useState<EvalResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -153,7 +153,7 @@ export function RagEvaluationCard({ projectId }: { projectId: string }) {
             onChange={(e) => setQuestions(e.target.value)}
             rows={3}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 resize-none"
-            placeholder="What is this project about?"
+            
           />
         </div>
 
