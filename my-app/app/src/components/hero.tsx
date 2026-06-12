@@ -12,11 +12,11 @@ export function Hero() {
            <span className="font-mono text-xs text-slate-400">v1.0 · deployed on Railway + Vercel</span>
         </div>
 
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
-          Your documents.
-          <br />
-          <span className="text-blue-400">AI that actually reads them.</span>
-        </h1>
+       <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
+         <span className="font-semibold">Your documents.</span>
+         <br />
+         <span className="text-blue-400 font-bold">AI that actually reads them.</span>
+       </h1>
 
         <p className="mx-auto max-w-2xl text-lg text-slate-400 mb-4 leading-relaxed">
           Organizations upload documents, generate scoped API keys, and chat with an AI that answers strictly from their own content — not from the internet.
@@ -49,7 +49,7 @@ export function Hero() {
             <span className="ml-2 text-xs text-slate-500">terminal</span>
           </div>
           <div className="space-y-1">
-             <p><span className="text-slate-500">$</span> <span className="text-blue-400">curl</span> <span className="text-slate-300">-X POST https://api.projectflow.ai/v1/chat</span></p>
+             <p><span className="text-slate-500">$</span> <span className="text-blue-400">curl</span> <span className="text-slate-300">-X POST https://saas-project-production-12a7.up.railway.app/v1/chat</span></p>
              <p className="text-slate-500 pl-4">-H <span className="text-amber-300">"Authorization: Bearer sk_prod_..."</span></p>
              <p className="text-slate-500 pl-4">-d <span className="text-emerald-300">'&#123;"query": "summarize my documents"&#125;'</span></p>
              <p className="mt-2 text-slate-500"># Response</p>
