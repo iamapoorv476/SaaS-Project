@@ -1,12 +1,26 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
+import { IBM_Plex_Mono } from "next/font/google"
+import { Newsreader } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const geistSans = Geist({ 
   subsets: ["latin"],
   variable: "--font-geist-sans",
+})
+
+const display = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+})
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
 })
 
 const geistMono = Geist_Mono({ 
@@ -38,9 +52,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${mono.variable} font-sans antialiased`}>
         {children}
         <Analytics />
+        
       </body>
     </html>
   )

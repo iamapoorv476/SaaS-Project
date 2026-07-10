@@ -1,11 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -46,7 +41,7 @@
 }
 
 .dark {
-  /* Dark mode already optimized for dark theme landing page */
+  /* Dark mode already optimized for dark theme dashboard */
   --background: oklch(0.08 0 0);
   --foreground: oklch(0.98 0 0);
   --card: oklch(0.12 0 0);
@@ -132,4 +127,18 @@
   html {
     scroll-behavior: smooth;
   }
+}
+
+/* ---- Landing page (paper design system) ---- */
+/* Marker-yellow text selection on the paper sections */
+.landing ::selection {
+  background: #f2df4e;
+  color: #1c1a15;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: #1c1a15;
 }

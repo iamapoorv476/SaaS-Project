@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, BarChart, Bar
+  Tooltip, ResponsiveContainer, BarChart, Bar, Cell
 } from "recharts";
 
 type DailyPoint = { date: string; total: number; errors: number };
@@ -12,43 +12,35 @@ type Summary = { totalRequests: number; totalErrors: number; errorRate: string }
 export function UsageCharts({ projectId }: { projectId: string }) {
   const [range, setRange] = useState("30");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [dailyChart, setDailyChart] = useState<DailyPoint[]>([]);
   const [byEnvironment, setByEnvironment] = useState<Record<string, number>>({});
 
-
   useEffect(() => {
-  let cancelled = false;
+    let cancelled = false;
 
-  async function loadData() {
-    setLoading(true);
-    try {
-      const r = await fetch(`/api/projects/${projectId}/usage?range=${range}`);
-      const data = await r.json();
-      if (!cancelled) {
-        setSummary(data.summary);
-        setDailyChart(data.dailyChart);
-        setByEnvironment(data.byEnvironment);
+    async function loadData() {
+      setLoading(true);
+      setError(false);
+      try {
+        const r = await fetch(`/api/projects/${projectId}/usage?range=${range}`);
+        const data = await r.json();
+        if (!cancelled) {
+          setSummary(data.summary);
+          setDailyChart(data.dailyChart ?? []);
+          setByEnvironment(data.byEnvironment ?? {});
+        }
+      } catch {
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } finally {
-      if (!cancelled) setLoading(false);
     }
-  }
 
-  loadData();
-  return () => { cancelled = true; };
-}, [projectId, range]);
-  // useEffect(() => {
-  //   setLoading(true);
-  //   fetch(`/api/projects/${projectId}/usage?range=${range}`)
-  //     .then((r) => r.json())
-  //     .then((data) => {
-  //       setSummary(data.summary);
-  //       setDailyChart(data.dailyChart);
-  //       setByEnvironment(data.byEnvironment);
-  //     })
-  //     .finally(() => setLoading(false));
-  // }, [projectId, range]);
+    loadData();
+    return () => { cancelled = true; };
+  }, [projectId, range]);
 
   const envData = Object.entries(byEnvironment).map(([env, count]) => ({
     env,
@@ -96,6 +88,10 @@ export function UsageCharts({ projectId }: { projectId: string }) {
         <div className="h-48 flex items-center justify-center text-slate-500 text-sm">
           Loading...
         </div>
+      ) : error ? (
+        <div className="h-48 flex items-center justify-center text-slate-500 text-sm">
+          Couldn&apos;t load usage data. Refresh to try again.
+        </div>
       ) : dailyChart.length === 0 ? (
         <div className="h-48 flex items-center justify-center text-slate-500 text-sm">
           No usage data yet. Make some API calls to see charts.
@@ -135,10 +131,11 @@ export function UsageCharts({ projectId }: { projectId: string }) {
                   <YAxis tick={{ fill: "#64748b", fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
+                    cursor={{ fill: "rgba(255,255,255,0.04)" }}
                   />
                   <Bar dataKey="requests" radius={[4, 4, 0, 0]}>
                     {envData.map((entry) => (
-                      <rect key={entry.env} fill={envColors[entry.env] ?? "#94a3b8"} />
+                      <Cell key={entry.env} fill={envColors[entry.env] ?? "#94a3b8"} />
                     ))}
                   </Bar>
                 </BarChart>

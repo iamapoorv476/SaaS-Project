@@ -240,7 +240,7 @@ function ChatPanel({
         {
             id: 'welcome',
             role: 'assistant',
-            content: `Hi! I'm ready to answer questions based on your uploaded documents. Upload a document on the left, then ask me anything about it.`,
+            content: `Hi! I'm ready to answer questions based on your uploaded documents. Upload a document on the left, then ask me anything about it — or try one of the suggestions below.`,
         }
     ]);
     const [input, setInput] = useState('');
@@ -248,12 +248,28 @@ function ChatPanel({
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const suggestions = agentMode
+        ? [
+              'Summarize all my documents',
+              'List my documents and pick the most technical one',
+              'What topics do my documents cover?',
+          ]
+        : [
+              'What sensors does the Guardian drone use?',
+              'How does the MQTT architecture work?',
+              'What motors does the drone use?',
+          ];
+
+    // Suggestions show only at the start of a conversation
+    const showSuggestions =
+        !streaming && messages.filter((m) => m.id !== 'welcome').length === 0;
+
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    async function sendMessage() {
-        const text = input.trim();
+    async function sendMessage(overrideText?: string) {
+        const text = (overrideText ?? input).trim();
         if (!text || streaming) return;
 
         const userMessage: Messages = {
@@ -402,6 +418,24 @@ function ChatPanel({
                     <ChatMessage key={m.id} message={m} />
                 ))}
 
+                {showSuggestions && (
+                    <div className="ml-8 mt-1 flex flex-wrap gap-2">
+                        {suggestions.map((q) => (
+                            <button
+                                key={q}
+                                onClick={() => void sendMessage(q)}
+                                className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                                    agentMode
+                                        ? 'border-purple-500/30 bg-purple-500/5 text-purple-300 hover:bg-purple-500/15'
+                                        : 'border-blue-500/30 bg-blue-500/5 text-blue-300 hover:bg-blue-500/15'
+                                }`}
+                            >
+                                {q}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 {streaming && messages[messages.length - 1]?.content === '' && (
                     <div className="flex justify-start mb-4">
                         <div className={`rounded-2xl rounded-bl-sm px-4 py-2.5 ${agentMode ? 'bg-purple-900/40 border border-purple-500/20' : 'bg-slate-800'}`}>
@@ -473,9 +507,10 @@ export function Playground({
             <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-8 max-w-lg mx-auto mt-8">
                 <h2 className="text-white font-semibold mb-2">Enter your API key</h2>
                 <p className="text-slate-400 text-sm mb-4">
-                    Paste an API key with{' '}
+                    The playground authenticates the same way your app would — with a
+                    scoped API key. Paste one with{' '}
                     <code className="bg-slate-800 px-1 rounded text-xs">ai:chat</code> and{' '}
-                    <code className="bg-slate-800 px-1 rounded text-xs">ai:embed</code> scopes to use the playground.
+                    <code className="bg-slate-800 px-1 rounded text-xs">ai:embed</code> scopes.
                 </p>
                 <input
                     type="text"
@@ -491,6 +526,12 @@ export function Playground({
                 >
                     Launch Playground
                 </button>
+                <p className="text-xs text-slate-500 mt-3">
+                    No key yet? Go back to the project dashboard and click{' '}
+                    <span className="text-slate-300">+ New API Key</span> — it takes
+                    about ten seconds. Keys are bcrypt-hashed; the full secret is shown
+                    only once at creation.
+                </p>
             </div>
         );
     }
@@ -511,6 +552,9 @@ export function Playground({
                 </div>
                 <button
                     onClick={() => setAgentMode((prev) => !prev)}
+                    role="switch"
+                    aria-checked={agentMode}
+                    aria-label="Toggle Agent Mode"
                     className={`relative w-12 h-6 rounded-full transition-colors ${
                         agentMode ? 'bg-purple-600' : 'bg-slate-700'
                     }`}

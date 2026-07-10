@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 type DailyUsage = {
@@ -26,11 +27,23 @@ function formatTokens(n: number): string {
   return String(n);
 }
 
-function BarChart({ daily }: { daily: DailyUsage[] }) {
+function BarChart({
+  daily,
+  playgroundHref,
+}: {
+  daily: DailyUsage[];
+  playgroundHref: string;
+}) {
   if (daily.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 text-slate-500 text-sm">
-        No usage data yet this month
+      <div className="flex flex-col items-center justify-center gap-2 h-32 text-sm">
+        <p className="text-slate-500">No usage yet this month.</p>
+        <Link
+          href={playgroundHref}
+          className="text-blue-400 hover:text-blue-300 transition-colors"
+        >
+          Run a query in the AI Playground to see this fill in →
+        </Link>
       </div>
     );
   }
@@ -79,6 +92,8 @@ export function TokenUsageCard({
   const [data, setData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const playgroundHref = `/dashboard/${organizationId}/projects/${projectId}/playground`;
 
   useEffect(() => {
     fetch(
@@ -182,7 +197,7 @@ export function TokenUsageCard({
       {/* Daily usage chart */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
         <p className="text-slate-400 text-sm mb-4">Daily Usage This Month</p>
-        <BarChart daily={data.daily} />
+        <BarChart daily={data.daily} playgroundHref={playgroundHref} />
       </div>
     </div>
   );

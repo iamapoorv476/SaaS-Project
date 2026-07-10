@@ -8,7 +8,7 @@ import { Footer } from "./src/components/footer"
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-950">
+    <div className="landing bg-[#F7F5EF]">
       <Header />
       <Hero />
       <DashboardPreview />
@@ -16,6 +16,6 @@ export default function Home() {
       <TechStack />
       <FinalCTA />
       <Footer />
-    </main>
+    </div>
   )
 }

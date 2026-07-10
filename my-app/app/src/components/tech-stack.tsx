@@ -9,30 +9,32 @@ export function TechStack() {
   ]
 
   return (
-    <section id="stack" className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">Production tech stack</h2>
-          <p className="text-slate-400 text-sm">Everything deployed and running in production</p>
+    <section id="stack" className="bg-[#EFECE3] px-6 py-20 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-10 flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 className="text-3xl text-[#1C1A15] [font-family:var(--font-display),ui-serif,Georgia,serif] font-medium">
+            Colophon
+          </h2>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#8A8577]">
+            every piece deployed &amp; running in production
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <dl className="border-t border-[#1C1A15]/15">
           {stack.map((group) => (
-            <div key={group.category}>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+            <div
+              key={group.category}
+              className="grid gap-1 border-b border-[#1C1A15]/15 py-4 sm:grid-cols-12 sm:gap-6"
+            >
+              <dt className="pt-0.5 font-mono text-xs uppercase tracking-[0.14em] text-[#8A8577] sm:col-span-3">
                 {group.category}
-              </p>
-              <ul className="space-y-2">
-                {group.items.map((item) => (
-                  <li key={item} className="text-sm text-slate-300 flex items-center gap-1.5">
-                    <span className="h-1 w-1 rounded-full bg-blue-400 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              </dt>
+              <dd className="text-[15px] text-[#1C1A15] sm:col-span-9">
+                {group.items.join("  ·  ")}
+              </dd>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
     </section>
   )

@@ -2,42 +2,48 @@ import Link from "next/link"
 
 export function Header() {
   return (
-    <header className="border-b border-white/5 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50">
-      <div className="mx-auto max-w-7xl px-6 py-4 lg:px-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-lg shadow-blue-600/30">
-              <span className="text-sm font-bold text-white">P</span>
-            </div>
-            <span className="text-base font-semibold text-white tracking-tight">ProjectFlow</span>
+    <header className="sticky top-0 z-50 border-b border-[#1C1A15]/10 bg-[#F7F5EF]/90 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5 lg:px-8">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#1C1A15]">
+            <span className="[font-family:var(--font-display),ui-serif,Georgia,serif] text-sm font-semibold text-[#F2DF4E]">
+              P
+            </span>
           </div>
+          <span className="text-[15px] font-semibold tracking-tight text-[#1C1A15]">
+            ProjectFlow
+          </span>
+        </Link>
 
-          <nav className="hidden gap-8 md:flex">
-            <a href="#features" className="text-sm text-slate-400 hover:text-white transition-colors">
-              Features
+        <nav className="hidden items-center gap-7 md:flex">
+          {[
+            { label: "Features", href: "#features" },
+            { label: "Demo", href: "#demo" },
+            { label: "Stack", href: "#stack" },
+          ].map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="font-mono text-xs uppercase tracking-[0.14em] text-[#6F6A5C] transition-colors hover:text-[#1C1A15]"
+            >
+              {item.label}
             </a>
-            <a href="#demo" className="text-sm text-slate-400 hover:text-white transition-colors">
-              Demo
-            </a>
-            <a href="#stack" className="text-sm text-slate-400 hover:text-white transition-colors">
-              Stack
-            </a>
-          </nav>
+          ))}
+        </nav>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/signin"
-              className="text-sm text-slate-400 hover:text-white transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20"
-            >
-              Try free
-            </Link>
-          </div>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/signin"
+            className="text-sm text-[#6F6A5C] transition-colors hover:text-[#1C1A15]"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-[3px] bg-[#1C1A15] px-4 py-2 text-sm font-semibold text-[#F7F5EF] transition-colors hover:bg-black"
+          >
+            Try free
+          </Link>
         </div>
       </div>
     </header>

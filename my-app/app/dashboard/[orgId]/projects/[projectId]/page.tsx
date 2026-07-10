@@ -103,23 +103,22 @@ export default async function ProjectDashboardPage({
         </div>
         </div>
 
-        {isAdmin &&(
-            <div className="flex gap-3">
-            {/* <Link
-              href={`/dashboard/${orgId}/projects/${projectId}/settings`}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition border border-white/10"
-            >
-                Settings
-            </Link> */}
-            <Link
-              href={`/dashboard/${orgId}/projects/${projectId}/keys/new`}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-blue-600/20"
-            >
-              + New API Key
-            </Link>
-
-            </div>
-        )}
+        {isAdmin && (
+  <div className="flex gap-3">
+    <Link
+      href={`/dashboard/${orgId}/projects/${projectId}/playground`}
+      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition"
+    >
+      AI Playground →
+    </Link>
+    <Link
+      href={`/dashboard/${orgId}/projects/${projectId}/keys/new`}
+      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-blue-600/20"
+    >
+      + New API Key
+    </Link>
+  </div>
+)}
         </div>
         
 
@@ -145,7 +144,7 @@ export default async function ProjectDashboardPage({
     subtext="production ready"
   />
 </div>
-{/* <UsageCharts projectId={projectId} /> */}
+ {/* //<UsageCharts projectId={projectId} />  */}
       <TokenUsageCard 
         projectId={projectId} 
         organizationId={orgId} 
