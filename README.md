@@ -6,8 +6,8 @@ A production-grade, multi-tenant SaaS platform where organizations manage scoped
 
 ```
 Demo credentials
-Email:    apoorvapratapsingh6@gmail.com
-Password: 123456
+Email:    demo@projectflow.ai 
+Password: demo123456
 ```
 
 ---
